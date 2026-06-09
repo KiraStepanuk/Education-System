@@ -1,0 +1,65 @@
+.carousel-section {
+  width: 100%;
+  margin-bottom: 40px;
+}
+
+/* HEADER */
+.carousel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+/* ARROWS */
+.carousel-arrows {
+  display: flex;
+  gap: 10px;
+}
+
+.arrow-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid #ddd;
+  background: white;
+  cursor: pointer;
+  font-size: 20px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.2s;
+}
+
+.arrow-btn:hover {
+  background: #f5f5f5;
+}
+
+/* CAROUSEL */
+.carousel-wrapper {
+  overflow: hidden;
+  width: 100%;
+}
+
+.carousel {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  padding-bottom: 10px;
+}
+
+/* hide scrollbar */
+.carousel::-webkit-scrollbar {
+  display: none;
+}
+
+/* optional: better alignment */
+.carousel {
+  scroll-snap-type: x mandatory;
+}
+
+.carousel > * {
+  scroll-snap-align: start;
+}
