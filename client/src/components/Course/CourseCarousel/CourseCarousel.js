@@ -2,6 +2,7 @@ import React, { useRef } from 'react';
 import './CourseCarousel.css';
 import CourseCard from '../CourseCard/CourseCard';
 import SectionHeading from '../../UI/SectionHeading/SectionHeading';
+import Button from '../../UI/Button/Button';
 
 const CourseCarousel = ({ title, courses, variant }) => {
   const carouselRef = useRef(null);
@@ -23,12 +24,16 @@ const CourseCarousel = ({ title, courses, variant }) => {
         <SectionHeading title={title} />
 
         <div className="carousel-arrows">
-          <button className="arrow-btn" onClick={() => scroll('left')}>
-            ‹
-          </button>
-          <button className="arrow-btn" onClick={() => scroll('right')}>
-            ›
-          </button>
+          <Button 
+            text="‹" 
+            onClick={() => scroll('left')} 
+            variant="arrow" 
+          />
+          <Button 
+            text="›" 
+            onClick={() => scroll('right')} 
+            variant="arrow" 
+          />
         </div>
       </div>
 

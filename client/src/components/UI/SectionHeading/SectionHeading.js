@@ -7,7 +7,7 @@ function SectionHeading(props) {
 
     return (
         <div className="section-heading">
-            <div className="red-rectangle"></div>   {/* червоний прямокутник */}
+            <div className="red-rectangle"></div>
             <h2 className="heading-text">{headingText}</h2>
         </div>
     );
