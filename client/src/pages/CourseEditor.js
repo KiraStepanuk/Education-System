@@ -56,17 +56,22 @@ const CourseEditor = ({ user }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (!user || !user.id) {
+      alert('Помилка: Ви не авторизовані! Будь ласка, увійдіть в систему знову.');
+      return;
+    }
+
     const courseData = {
       title,
       content,
       image: image || '',
-      userId: user?.id,
+      author_id: user.id,
     };
 
-    const url = isEditMode 
-      ? `http://localhost:5000/courses/${id}` 
+    const url = isEditMode
+      ? `http://localhost:5000/courses/${id}`
       : 'http://localhost:5000/courses';
-    
+
     const method = isEditMode ? 'PUT' : 'POST';
 
     try {

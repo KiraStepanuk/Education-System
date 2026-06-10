@@ -30,13 +30,17 @@ const CoursePreview = ({ user }) => {
   const handleApprove = async () => {
     try {
       const response = await fetch(`http://localhost:5000/courses/${id}/approve`, {
-        method: 'POST',
+        method: 'PUT', // Изменили POST на PUT
+        headers: {
+          'user_id': user?.id // Передаем ID пользователя для middleware checkRole
+        }
       });
 
       if (response.ok) {
         navigate('/home');
       } else {
-        alert('Помилка при погодженні курсу');
+        const errorData = await response.json();
+        alert(`Помилка при погодженні курсу: ${errorData.error || 'Невідома помилка'}`);
       }
     } catch (error) {
       console.error('Помилка запиту:', error);
@@ -46,16 +50,20 @@ const CoursePreview = ({ user }) => {
   const handleRejectConfirm = async (reason) => {
     try {
       const response = await fetch(`http://localhost:5000/courses/${id}/reject`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ rejectReason: reason }),
+        method: 'PUT', // Изменили POST на PUT
+        headers: {
+          'Content-Type': 'application/json',
+          'user_id': user?.id // Передаем ID пользователя для middleware
+        },
+        body: JSON.stringify({ reject_reason: reason }), // Заменили rejectReason на reject_reason
       });
 
       if (response.ok) {
         setIsModalOpen(false);
         navigate('/home');
       } else {
-        alert('Помилка при відхиленні курсу');
+        const errorData = await response.json();
+        alert(`Помилка при відхиленні курсу: ${errorData.error || 'Невідома помилка'}`);
       }
     } catch (error) {
       console.error('Помилка запиту:', error);
