@@ -33,29 +33,126 @@ db.serialize(() => {
   )`);
 
   const stmt = db.prepare("INSERT OR IGNORE INTO users (username, password, role, firstName, lastName) VALUES (?, ?, ?, ?, ?)");
-stmt.run("admin", "admin123", "admin", "Олександр", "Коваленко");
-stmt.run("user", "user123", "user", "Марія", "Шевченко");
+  stmt.run("admin", "admin123", "admin", "Олександр", "Коваленко");
+  stmt.run("user", "user123", "user", "Марія", "Шевченко");
   stmt.finalize();
 });
 
 app.post('/login', (req, res) => {
   const { username, password } = req.body;
-  
-  db.get("SELECT * FROM users WHERE username = ? AND password = ?", [username, password], (err, row) => {
-    if (row) {
-      res.json({ success: true, user: row });
-    } else {
-      res.status(401).json({ success: false, message: "Неверный логин или пароль" });
+
+  db.get(
+    "SELECT * FROM users WHERE username = ? AND password = ?",
+    [username, password],
+    (err, row) => {
+      if (row) {
+        res.json({ success: true, user: row });
+      } else {
+        res.status(401).json({ success: false, message: "Неверный логин или пароль" });
+      }
     }
+  );
+});
+
+function checkRole(role) {
+  return (req, res, next) => {
+    const userId = req.headers['user_id'];
+
+    db.get("SELECT * FROM users WHERE id = ?", [userId], (err, user) => {
+      if (!user) return res.status(401).json({ error: "No user" });
+
+      if (user.role !== role) {
+        return res.status(403).json({ error: "Forbidden" });
+      }
+
+      req.user = user;
+      next();
+    });
+  };
+}
+
+app.get('/courses', (req, res) => {
+  const { author_id, status } = req.query;
+
+  let query = "SELECT * FROM courses WHERE 1=1";
+  const params = [];
+
+  if (author_id) {
+    query += " AND author_id = ?";
+    params.push(author_id);
+  }
+
+  if (status) {
+    query += " AND status = ?";
+    params.push(status);
+  }
+
+  db.all(query, params, (err, rows) => {
+    res.json(rows);
   });
 });
 
-app.get('/courses', (req, res) => {
-  const mockCourses = [
-    { id: 1, title: 'Основи Python', reviews: 75, role: 'user' },
-    { id: 2, title: 'Excel для бізнесу', reviews: 140, role: 'admin' }
-  ];
-  res.json(mockCourses);
+app.post('/courses', (req, res) => {
+  const { title, content, author_id } = req.body;
+
+  db.run(
+    `INSERT INTO courses (title, content, author_id, status)
+     VALUES (?, ?, ?, 'pending')`,
+    [title, content, author_id],
+    function (err) {
+      if (err) return res.status(500).json({ error: err.message });
+
+      res.json({ success: true, course_id: this.lastID });
+    }
+  );
+});
+
+app.get('/courses/:id', (req, res) => {
+  db.get(
+    "SELECT * FROM courses WHERE id = ?",
+    [req.params.id],
+    (err, row) => {
+      res.json(row);
+    }
+  );
+});
+
+app.put('/courses/:id', (req, res) => {
+  const { title, content } = req.body;
+
+  db.run(
+    `UPDATE courses 
+     SET title = ?, content = ?, status = 'pending', reject_reason = ''
+     WHERE id = ?`,
+    [title, content, req.params.id],
+    function () {
+      res.json({ success: true });
+    }
+  );
+});
+
+app.put('/courses/:id/approve', checkRole('admin'), (req, res) => {
+  db.run(
+    `UPDATE courses SET status = 'approved' WHERE id = ?`,
+    [req.params.id],
+    function () {
+      res.json({ success: true });
+    }
+  );
+});
+
+app.put('/courses/:id/reject', checkRole('admin'), (req, res) => {
+  const { reject_reason } = req.body;
+
+  db.run(
+    `UPDATE courses 
+     SET status = 'rejected', reject_reason = ?
+     WHERE id = ?`,
+    [reject_reason, req.params.id],
+    function () {
+      res.json({ success: true });
+    }
+  );
 });
 
 app.listen(5000, () => console.log('Server running on port 5000'));
