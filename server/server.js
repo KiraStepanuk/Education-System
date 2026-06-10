@@ -1,13 +1,11 @@
 const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
 const cors = require('cors');
-const sqlite3 = require('sqlite3').verbose();
-require('dotenv').config();
+const bodyParser = require('body-parser');
 
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
-
 
 const db = new sqlite3.Database('./database.sqlite');
 
@@ -21,12 +19,24 @@ db.serialize(() => {
     lastName TEXT
   )`);
 
+  db.run(`CREATE TABLE IF NOT EXISTS courses (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    content TEXT NOT NULL,
+    image TEXT,
+    author_id INTEGER NOT NULL,
+    status TEXT DEFAULT 'pending',
+    reject_reason TEXT DEFAULT '',
+    rating REAL DEFAULT 5.0,
+    reviews INTEGER DEFAULT 0,
+    FOREIGN KEY (author_id) REFERENCES users(id)
+  )`);
+
   const stmt = db.prepare("INSERT OR IGNORE INTO users (username, password, role, firstName, lastName) VALUES (?, ?, ?, ?, ?)");
 stmt.run("admin", "admin123", "admin", "Олександр", "Коваленко");
 stmt.run("user", "user123", "user", "Марія", "Шевченко");
   stmt.finalize();
 });
-
 
 app.post('/login', (req, res) => {
   const { username, password } = req.body;
