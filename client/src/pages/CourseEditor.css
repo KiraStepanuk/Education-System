@@ -1,0 +1,151 @@
+.editor-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: white;
+}
+
+.editor-container {
+  flex: 1;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px;
+  box-sizing: border-box;
+}
+
+.editor-header-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 40px;
+}
+
+.back-circle-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background-color: #f5f5f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 18px;
+  transition: background-color 0.2s;
+}
+
+.back-circle-btn:hover {
+  background-color: #e0e0e0;
+}
+
+.editor-form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.editor-top-section {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.course-image-preview-box {
+  width: 150px;
+  height: 150px;
+  background-color: #f5f5f5;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05);
+}
+
+.editor-preview-img {
+  max-width: 100px;
+  max-height: 100px;
+  object-fit: contain;
+}
+
+.empty-image-placeholder {
+  color: #999;
+  font-size: 14px;
+}
+
+.course-title-input-container {
+  flex: 1;
+}
+
+.course-title-input {
+  width: 100%;
+  border: none;
+  border-bottom: 2px solid #e0e0e0;
+  font-size: 28px;
+  font-weight: 500;
+  padding: 8px 0;
+  font-family: inherit;
+}
+
+.course-title-input:focus {
+  outline: none;
+  border-bottom-color: #db4444;
+}
+
+.rejection-notice {
+  background-color: #fff5f5;
+  border-left: 4px solid #db4444;
+  padding: 16px;
+  border-radius: 4px;
+}
+
+.rejection-label {
+  font-weight: bold;
+  color: #c33b3b;
+  margin: 0 0 8px 0;
+  font-size: 15px;
+}
+
+.rejection-text {
+  margin: 0;
+  color: #333;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.editor-content-section {
+  width: 100%;
+}
+
+.course-content-textarea {
+  width: 100%;
+  height: 300px;
+  border: 1px solid #dcdcdc;
+  border-radius: 4px;
+  padding: 20px;
+  font-family: inherit;
+  font-size: 16px;
+  line-height: 1.6;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+.course-content-textarea:focus {
+  outline: none;
+  border-color: #db4444;
+}
+
+.editor-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
+}
+
+.editor-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-size: 20px;
+}
