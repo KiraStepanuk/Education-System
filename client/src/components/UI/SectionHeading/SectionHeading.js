@@ -3,7 +3,7 @@ import './SectionHeading.css';
 
 function SectionHeading(props) {
 
-    const headingText = props.text;
+    const headingText = props.text || props.title;
 
     return (
         <div className="section-heading">
