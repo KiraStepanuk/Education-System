@@ -96,3 +96,9 @@
   height: 100vh;
   font-size: 20px;
 }
+
+.preview-author-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}

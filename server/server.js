@@ -175,6 +175,37 @@ app.put('/courses/:id', (req, res) => {
   );
 });
 
+// Видалити курс
+app.delete('/courses/:id', (req, res) => {
+  const userId = req.headers['user_id'];
+
+  db.get(
+    "SELECT * FROM courses WHERE id = ?",
+    [req.params.id],
+    (err, course) => {
+      if (err) return res.status(500).json({ error: err.message });
+
+      if (!course) {
+        return res.status(404).json({ error: "Курс не знайдено" });
+      }
+
+      if (course.author_id != userId) {
+        return res.status(403).json({ error: "Forbidden" });
+      }
+
+      db.run(
+        "DELETE FROM courses WHERE id = ?",
+        [req.params.id],
+        function (err) {
+          if (err) return res.status(500).json({ error: err.message });
+
+          res.json({ success: true });
+        }
+      );
+    }
+  );
+});
+
 // --- РОУТИ МОДЕРАЦІЇ (Тільки для Адміна) ---
 
 // Погодити курс

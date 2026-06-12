@@ -30,9 +30,9 @@ const CoursePreview = ({ user }) => {
   const handleApprove = async () => {
     try {
       const response = await fetch(`http://localhost:5000/courses/${id}/approve`, {
-        method: 'PUT', // Изменили POST на PUT
+        method: 'PUT',
         headers: {
-          'user_id': user?.id // Передаем ID пользователя для middleware checkRole
+          'user_id': user?.id
         }
       });
 
@@ -50,12 +50,12 @@ const CoursePreview = ({ user }) => {
   const handleRejectConfirm = async (reason) => {
     try {
       const response = await fetch(`http://localhost:5000/courses/${id}/reject`, {
-        method: 'PUT', // Изменили POST на PUT
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'user_id': user?.id // Передаем ID пользователя для middleware
+          'user_id': user?.id
         },
-        body: JSON.stringify({ reject_reason: reason }), // Заменили rejectReason на reject_reason
+        body: JSON.stringify({ reject_reason: reason }),
       });
 
       if (response.ok) {
@@ -70,6 +70,29 @@ const CoursePreview = ({ user }) => {
     }
   };
 
+const handleDelete = async () => {
+  const confirmDelete = window.confirm("Ви впевнені, що хочете видалити цей курс?");
+  if (!confirmDelete) return;
+
+  try {
+    const response = await fetch(`http://localhost:5000/courses/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'user_id': user?.id
+      }
+    });
+
+    if (response.ok) {
+      navigate('/home');
+    } else {
+      const data = await response.json();
+      alert(data.error || "Помилка при видаленні курсу");
+    }
+  } catch (error) {
+    console.error("Помилка при видаленні:", error);
+  }
+};
+
   if (loading) {
     return <div className="preview-loading">Завантаження...</div>;
   }
@@ -79,6 +102,7 @@ const CoursePreview = ({ user }) => {
   }
 
   const isAdmin = user?.role === 'admin';
+  const isAuthor = user && course && course.author_id === user.id;
 
   return (
     <div className="preview-page">
@@ -101,7 +125,7 @@ const CoursePreview = ({ user }) => {
             
             <div className="preview-title-actions-container">
               <h1 className="preview-course-title">{course.title}</h1>
-              
+
               {isAdmin && course.status === 'pending' && (
                 <div className="preview-moderator-actions">
                   <Button 
@@ -113,6 +137,21 @@ const CoursePreview = ({ user }) => {
                     text="Відхилити" 
                     variant="red" 
                     onClick={() => setIsModalOpen(true)} 
+                  />
+                </div>
+              )}
+
+              {isAuthor && (
+                <div className="preview-author-actions">
+                  <Button 
+                    text="Редагувати" 
+                    variant="blue" 
+                    onClick={() => navigate(`/edit-course/${course.id}`)} 
+                  />
+                  <Button 
+                    text="Видалити" 
+                    variant="red" 
+                    onClick={handleDelete} 
                   />
                 </div>
               )}
