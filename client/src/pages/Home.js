@@ -32,28 +32,26 @@ const Home = ({ user }) => {
 
   const userRoleText = user ? (user.role === 'admin' ? 'Адмін' : 'Користувач') : 'Гість';
 
-  useEffect(() => {
+  const loadCourses = () => {
     fetch('http://localhost:5000/courses')
-        .then((res) => {
-          if (!res.ok) throw new Error('Помилка сервера');
-          return res.json();
-        })
-        .then((data) => {
-          if (data.length <= 2) {
-            setCourses(DEFAULT_MOCK_COURSES);
-          } else {
-            setCourses(data);
-          }
-          setLoading(false);
-        })
-        .catch((err) => {
-          console.warn("Сервер не доступний або база порожня. Використовуються локальні дані:", err);
-          setCourses(DEFAULT_MOCK_COURSES);
-          setLoading(false);
-        });
-  }, []);
+      .then((res) => {
+        if (!res.ok) throw new Error('Помилка сервера');
+        return res.json();
+      })
+      .then((data) => {
+        setCourses(data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.warn("Сервер не доступний або база порожня. Використовуються локальні дані:", err);
+        setCourses(DEFAULT_MOCK_COURSES);
+        setLoading(false);
+      });
+  };
 
-  // --- ФУНКЦІЇ МОДЕРАЦІЇ ---
+  useEffect(() => {
+    loadCourses();
+  }, []);
 
   const handleApprove = async (courseId) => {
     try {
@@ -63,9 +61,8 @@ const Home = ({ user }) => {
       });
 
       if (response.ok) {
-        // Миттєво оновлюємо стан, змінюючи статус курсу
         setCourses(prevCourses =>
-            prevCourses.map(c => c.id === courseId ? { ...c, status: 'approved' } : c)
+          prevCourses.map(c => c.id === courseId ? { ...c, status: 'approved' } : c)
         );
       } else {
         alert('Помилка при погодженні курсу');
@@ -77,7 +74,7 @@ const Home = ({ user }) => {
 
   const handleReject = async (courseId) => {
     const reason = prompt("Введіть причину відхилення:");
-    if (!reason) return; // Якщо адмін скасував, виходимо
+    if (!reason) return;
 
     try {
       const response = await fetch(`http://localhost:5000/courses/${courseId}/reject`, {
@@ -90,9 +87,8 @@ const Home = ({ user }) => {
       });
 
       if (response.ok) {
-        // Миттєво оновлюємо стан, змінюючи статус курсу
         setCourses(prevCourses =>
-            prevCourses.map(c => c.id === courseId ? { ...c, status: 'rejected' } : c)
+          prevCourses.map(c => c.id === courseId ? { ...c, status: 'rejected' } : c)
         );
       } else {
         alert('Помилка при відхиленні курсу');
@@ -101,8 +97,6 @@ const Home = ({ user }) => {
       console.error('Помилка запиту:', error);
     }
   };
-
-  // -------------------------
 
   const processedCourses = courses.map(course => ({
     ...course,
@@ -115,63 +109,62 @@ const Home = ({ user }) => {
 
   if (loading) {
     return (
-        <div className="home-page">
-          <Header role={userRoleText} />
-          <div className="home-loading">Завантаження курсів...</div>
-          <Footer />
-        </div>
+      <div className="home-page">
+        <Header role={userRoleText} />
+        <div className="home-loading">Завантаження курсів...</div>
+        <Footer />
+      </div>
     );
   }
 
   return (
-      <div className="home-page">
-        <Header role={userRoleText} />
+    <div className="home-page">
+      <Header role={userRoleText} />
 
-        <main className="home-container">
-          {user?.role === 'admin' ? (
-              <section className="moderator-section">
+      <main className="home-container">
+        {user?.role === 'admin' ? (
+          <section className="moderator-section">
+            <CourseCarousel
+              title="Курси що потребують модерації"
+              courses={pendingCourses}
+              variant="moderation"
+              onApprove={handleApprove}
+              onReject={handleReject}
+            />
+          </section>
+        ) : (
+          <>
+            <div className="home-action-row">
+              <Button
+                text="Створити свій курс"
+                variant="red"
+                onClick={() => navigate('/create-course')}
+              />
+            </div>
+
+            <section className="user-section">
+              <CourseCarousel
+                title="Курси які можна прочитати"
+                courses={approvedCourses}
+                variant="view"
+              />
+            </section>
+
+            {myRejectedCourses.length > 0 && (
+              <section className="user-section">
                 <CourseCarousel
-                    title="Курси що потребують модерації"
-                    courses={pendingCourses}
-                    variant="moderation"
-                    // ПЕРЕДАЄМО ФУНКЦІЇ В КАРУСЕЛЬ:
-                    onApprove={handleApprove}
-                    onReject={handleReject}
+                  title="Курси які потребують редагування"
+                  courses={myRejectedCourses}
+                  variant="editable"
                 />
               </section>
-          ) : (
-              <>
-                <div className="home-action-row">
-                  <Button
-                      text="Створити свій курс"
-                      variant="red"
-                      onClick={() => navigate('/create-course')}
-                  />
-                </div>
+            )}
+          </>
+        )}
+      </main>
 
-                <section className="user-section">
-                  <CourseCarousel
-                      title="Курси які можна прочитати"
-                      courses={approvedCourses}
-                      variant="view"
-                  />
-                </section>
-
-                {myRejectedCourses.length > 0 && (
-                    <section className="user-section">
-                      <CourseCarousel
-                          title="Курси які потребують редагування"
-                          courses={myRejectedCourses}
-                          variant="editable"
-                      />
-                    </section>
-                )}
-              </>
-          )}
-        </main>
-
-        <Footer />
-      </div>
+      <Footer />
+    </div>
   );
 };
 
