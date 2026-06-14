@@ -7,6 +7,14 @@ import mainIcon from './assets/main.png';
 const Header = ({ role }) => {
   const navigate = useNavigate();
 
+  const handleAvatarClick = () => {
+    if (role === 'Гість' || role === 'guest') {
+      navigate('/');
+    } else {
+      navigate('/dashboard');
+    }
+  };
+
   return (
     <header className="main-header">
       <div className="header-content">
@@ -21,7 +29,7 @@ const Header = ({ role }) => {
             <p className="role-name">{role}</p>
           </div>
 
-          <div className="header-user-avatar" onClick={() => navigate('/dashboard')}>
+          <div className="header-user-avatar" onClick={handleAvatarClick}>
             <img src={userIcon} alt="User Profile" className="header-user-icon" />
           </div>
         </div>

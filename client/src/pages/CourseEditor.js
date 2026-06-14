@@ -18,6 +18,13 @@ const CourseEditor = ({ user }) => {
   const [image, setImage] = useState('');
   const [loading, setLoading] = useState(isEditMode);
 
+ 
+  let userRoleText = 'Гість';
+  if (user) {
+    if (user.role === 'admin') userRoleText = 'Адмін';
+    else if (user.role === 'user') userRoleText = 'Користувач';
+  }
+
   useEffect(() => {
     if (isEditMode) {
       fetch(`http://localhost:5000/courses/${id}`)
@@ -97,7 +104,7 @@ const CourseEditor = ({ user }) => {
 
   return (
     <div className="editor-page">
-      <Header role={user?.role === 'admin' ? 'Адмін' : 'Користувач'} />
+      <Header role={userRoleText} />
       
       <main className="editor-container">
         <div className="editor-header-row">
