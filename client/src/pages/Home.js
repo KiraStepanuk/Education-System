@@ -30,7 +30,12 @@ const Home = ({ user }) => {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const userRoleText = user ? (user.role === 'admin' ? 'Адмін' : 'Користувач') : 'Гість';
+
+  let userRoleText = 'Гість';
+  if (user) {
+    if (user.role === 'admin') userRoleText = 'Адмін';
+    else if (user.role === 'user') userRoleText = 'Користувач';
+  }
 
   const loadCourses = () => {
     fetch('http://localhost:5000/courses')
@@ -134,13 +139,17 @@ const Home = ({ user }) => {
           </section>
         ) : (
           <>
-            <div className="home-action-row">
-              <Button
-                text="Створити свій курс"
-                variant="red"
-                onClick={() => navigate('/create-course')}
-              />
-            </div>
+
+            {user?.role !== 'guest' && (
+              <div className="home-action-row">
+                <Button
+                  text="Створити свій курс"
+                  variant="red"
+                  onClick={() => navigate('/create-course')}
+                />
+              </div>
+            )}
+
 
             <section className="user-section">
               <CourseCarousel
@@ -150,7 +159,8 @@ const Home = ({ user }) => {
               />
             </section>
 
-            {myRejectedCourses.length > 0 && (
+
+            {user?.role !== 'guest' && myRejectedCourses.length > 0 && (
               <section className="user-section">
                 <CourseCarousel
                   title="Курси які потребують редагування"
