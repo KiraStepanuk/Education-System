@@ -236,6 +236,39 @@ app.put('/courses/:id/reject', checkRole('admin'), (req, res) => {
   );
 });
 
+app.post('/register', (req, res) => {
+  const { username, password, firstName, lastName, role } = req.body;
+
+  // 1. Перевіряємо, чи немає вже такого юзера
+  db.get(
+    "SELECT * FROM users WHERE username = ?",
+    [username],
+    (err, row) => {
+      if (err) return res.status(500).json({ error: err.message });
+      if (row) return res.status(400).json({ error: "Користувач з таким логіном вже існує" });
+
+      // 2. Зберігаємо нового користувача в БД
+      db.run(
+        "INSERT INTO users (username, password, role, firstName, lastName) VALUES (?, ?, ?, ?, ?)",
+        [username, password, role, firstName, lastName],
+        function (err) {
+          if (err) return res.status(500).json({ error: err.message });
+
+          // 3. Повертаємо об'єкт нового користувача
+          const newUser = {
+            id: this.lastID,
+            username,
+            role,
+            firstName,
+            lastName
+          };
+
+          res.json({ success: true, user: newUser });
+        }
+      );
+    }
+  );
+});
 // --- ЗАПУСК СЕРВЕРА ---
 
 app.listen(5000, () => console.log('Server running on port 5000'));
