@@ -1,7 +1,11 @@
+require('dotenv').config();
 const express = require('express');
-const sqlite3 = require('sqlite3').verbose();
+const mongoose = require('mongoose');
 const cors = require('cors');
 const bodyParser = require('body-parser');
+
+const User = require('./models/User');
+const Course = require('./models/Course');
 
 const app = express();
 app.use(cors());
@@ -10,265 +14,211 @@ app.use(cors());
 app.use(bodyParser.json({ limit: '10mb' }));
 app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
 
-const db = new sqlite3.Database('./database.sqlite');
+const mongoURI = process.env.MONGODB_URI;
 
-// Ініціалізація бази даних
-db.serialize(() => {
-  db.run(`CREATE TABLE IF NOT EXISTS users (
-                                             id INTEGER PRIMARY KEY AUTOINCREMENT,
-                                             username TEXT UNIQUE,
-                                             password TEXT,
-                                             role TEXT,
-                                             firstName TEXT,
-                                             lastName TEXT
-          )`);
-
-  db.run(`CREATE TABLE IF NOT EXISTS courses (
-                                               id INTEGER PRIMARY KEY AUTOINCREMENT,
-                                               title TEXT NOT NULL,
-                                               content TEXT NOT NULL,
-                                               image TEXT,
-                                               author_id INTEGER NOT NULL,
-                                               status TEXT DEFAULT 'pending',
-                                               reject_reason TEXT DEFAULT '',
-                                               rating REAL DEFAULT 5.0,
-                                               reviews INTEGER DEFAULT 0,
-                                               FOREIGN KEY (author_id) REFERENCES users(id)
-    )`);
-
-  // Створюємо тестових користувачів, якщо їх ще немає
-  const stmt = db.prepare("INSERT OR IGNORE INTO users (username, password, role, firstName, lastName) VALUES (?, ?, ?, ?, ?)");
-  stmt.run("admin", "admin123", "admin", "Олександр", "Коваленко");
-  stmt.run("user", "user123", "user", "Марія", "Шевченко");
-  stmt.finalize();
-});
-
-// --- АВТОРИЗАЦІЯ ---
-
-app.post('/login', (req, res) => {
-  const { username, password } = req.body;
-
-  db.get(
-      "SELECT * FROM users WHERE username = ? AND password = ?",
-      [username, password],
-      (err, row) => {
-        if (row) {
-          res.json({ success: true, user: row });
-        } else {
-          res.status(401).json({ success: false, message: "Невірний логін або пароль" });
-        }
-      }
-  );
-});
+mongoose.connect(mongoURI)
+  .then(() => console.log('Успішно підключено до MongoDB Atlas'))
+  .catch(err => console.error('Помилка підключення до MongoDB:', err));
 
 // Middleware для перевірки ролей адміністратора
-function checkRole(role) {
-  return (req, res, next) => {
+async function checkRole(role) {
+  return async (req, res, next) => {
     const userId = req.headers['user_id'];
+    if (!userId) return res.status(401).json({ error: "No user" });
 
-    db.get("SELECT * FROM users WHERE id = ?", [userId], (err, user) => {
+    try {
+      const user = await User.findById(userId);
       if (!user) return res.status(401).json({ error: "No user" });
-
-      if (user.role !== role) {
-        return res.status(403).json({ error: "Forbidden" });
-      }
+      if (user.role !== role) return res.status(403).json({ error: "Forbidden" });
 
       req.user = user;
       next();
-    });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
   };
 }
 
-// --- РОУТИ ДЛЯ КОРИСТУВАЧІВ ---
+// --- АВТОРИЗАЦІЯ ---
 
-// Отримати всіх користувачів (без паролів для безпеки!)
-app.get('/users', (req, res) => {
-  db.all(
-      "SELECT id, username, role, firstName, lastName FROM users",
-      [],
-      (err, rows) => {
-        if (err) return res.status(500).json({ error: err.message });
-        res.json(rows);
-      }
-  );
+app.post('/register', async (req, res) => {
+  const { username, password, firstName, lastName, role } = req.body;
+
+  try {
+    // 1. Перевіряємо, чи немає вже такого користувача
+    const existingUser = await User.findOne({ username });
+    if (existingUser) {
+      return res.status(400).json({ error: "Користувач з таким логіном вже існує" });
+    }
+
+    // 2. Створюємо та зберігаємо нового користувача в БД
+    const newUser = new User({
+      username,
+      password,
+      firstName,
+      lastName,
+      role: role || 'user'
+    });
+
+    const savedUser = await newUser.save();
+
+    // 3. Повертаємо об'єкт створеного користувача (без пароля)
+    res.json({ 
+      success: true, 
+      user: {
+        id: savedUser._id,
+        username: savedUser.username,
+        role: savedUser.role,
+        firstName: savedUser.firstName,
+        lastName: savedUser.lastName
+      } 
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-// Отримати конкретного користувача за ID
-app.get('/users/:id', (req, res) => {
-  db.get(
-      "SELECT id, username, role, firstName, lastName FROM users WHERE id = ?",
-      [req.params.id],
-      (err, row) => {
-        if (err) return res.status(500).json({ error: err.message });
-        if (!row) return res.status(404).json({ error: "Користувача не знайдено" });
-        res.json(row);
-      }
-  );
+app.post('/login', async (req, res) => {
+  const { username, password } = req.body;
+
+  try {
+    const user = await User.findOne({ username, password });
+    if (user) {
+      res.json({ success: true, user });
+    } else {
+      res.status(401).json({ success: false, message: "Невірний логін або пароль" });
+    }
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// --- РОУТИ ДЛЯ КОРИСТУВАЧІВ ---
+
+app.get('/users', async (req, res) => {
+  try {
+    const users = await User.find({}, 'username role firstName lastName');
+    res.json(users);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/users/:id', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id, 'username role firstName lastName');
+    if (!user) return res.status(404).json({ error: "Користувача не знайдено" });
+    res.json(user);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // --- РОУТИ ДЛЯ КУРСІВ ---
 
-// Отримати всі курси (з можливістю фільтрації по status та author_id)
-app.get('/courses', (req, res) => {
+app.get('/courses', async (req, res) => {
   const { author_id, status } = req.query;
+  const filter = {};
 
-  let query = "SELECT * FROM courses WHERE 1=1";
-  const params = [];
+  if (author_id) filter.author_id = author_id;
+  if (status) filter.status = status;
 
-  if (author_id) {
-    query += " AND author_id = ?";
-    params.push(author_id);
+  try {
+    const courses = await Course.find(filter);
+    res.json(courses);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
-
-  if (status) {
-    query += " AND status = ?";
-    params.push(status);
-  }
-
-  db.all(query, params, (err, rows) => {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json(rows);
-  });
 });
 
-// Створити новий курс
-app.post('/courses', (req, res) => {
+app.post('/courses', async (req, res) => {
   const { title, content, image, author_id } = req.body;
 
-  db.run(
-      `INSERT INTO courses (title, content, image, author_id, status)
-       VALUES (?, ?, ?, ?, 'pending')`,
-      [title, content, image, author_id],
-      function (err) {
-        if (err) return res.status(500).json({ error: err.message });
-        res.json({ success: true, course_id: this.lastID });
-      }
-  );
+  try {
+    const newCourse = new Course({
+      title,
+      content,
+      image,
+      author_id,
+      status: 'pending'
+    });
+    const savedCourse = await newCourse.save();
+    res.json({ success: true, course_id: savedCourse._id });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-// Отримати конкретний курс за ID
-app.get('/courses/:id', (req, res) => {
-  db.get(
-      "SELECT * FROM courses WHERE id = ?",
-      [req.params.id],
-      (err, row) => {
-        if (err) return res.status(500).json({ error: err.message });
-        if (!row) return res.status(404).json({ error: "Курс не знайдено" });
-        res.json(row);
-      }
-  );
+app.get('/courses/:id', async (req, res) => {
+  try {
+    const course = await Course.findById(req.params.id);
+    if (!course) return res.status(404).json({ error: "Курс не знайдено" });
+    res.json(course);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-// Редагувати курс (відправляємо знову на перевірку)
-app.put('/courses/:id', (req, res) => {
+app.put('/courses/:id', async (req, res) => {
   const { title, content, image } = req.body;
 
-  db.run(
-      `UPDATE courses 
-     SET title = ?, content = ?, image = ?, status = 'pending', reject_reason = ''
-     WHERE id = ?`,
-      [title, content, image, req.params.id],
-      function (err) {
-        if (err) return res.status(500).json({ error: err.message });
-        res.json({ success: true });
-      }
-  );
+  try {
+    const updatedCourse = await Course.findByIdAndUpdate(
+      req.params.id,
+      { title, content, image, status: 'pending', reject_reason: '' },
+      { new: true }
+    );
+    if (!updatedCourse) return res.status(404).json({ error: "Курс не знайдено" });
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-// Видалити курс
-app.delete('/courses/:id', (req, res) => {
+app.delete('/courses/:id', async (req, res) => {
   const userId = req.headers['user_id'];
 
-  db.get(
-    "SELECT * FROM courses WHERE id = ?",
-    [req.params.id],
-    (err, course) => {
-      if (err) return res.status(500).json({ error: err.message });
+  try {
+    const course = await Course.findById(req.params.id);
+    if (!course) return res.status(404).json({ error: "Курс не знайдено" });
 
-      if (!course) {
-        return res.status(404).json({ error: "Курс не знайдено" });
-      }
-
-      if (course.author_id != userId) {
-        return res.status(403).json({ error: "Forbidden" });
-      }
-
-      db.run(
-        "DELETE FROM courses WHERE id = ?",
-        [req.params.id],
-        function (err) {
-          if (err) return res.status(500).json({ error: err.message });
-
-          res.json({ success: true });
-        }
-      );
+    if (course.author_id !== userId) {
+      return res.status(403).json({ error: "Forbidden" });
     }
-  );
+
+    await Course.findByIdAndDelete(req.params.id);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-// --- РОУТИ МОДЕРАЦІЇ (Тільки для Адміна) ---
+// --- РОУТИ МОДЕРАЦІЇ ---
 
-// Погодити курс
-app.put('/courses/:id/approve', checkRole('admin'), (req, res) => {
-  db.run(
-      `UPDATE courses SET status = 'approved' WHERE id = ?`,
-      [req.params.id],
-      function (err) {
-        if (err) return res.status(500).json({ error: err.message });
-        res.json({ success: true });
-      }
-  );
+app.put('/courses/:id/approve', async (req, res) => {
+  try {
+    const course = await Course.findByIdAndUpdate(req.params.id, { status: 'approved' });
+    if (!course) return res.status(404).json({ error: "Курс не знайдено" });
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-// Відхилити курс
-app.put('/courses/:id/reject', checkRole('admin'), (req, res) => {
+app.put('/courses/:id/reject', async (req, res) => {
   const { reject_reason } = req.body;
 
-  db.run(
-      `UPDATE courses
-       SET status = 'rejected', reject_reason = ?
-       WHERE id = ?`,
-      [reject_reason, req.params.id],
-      function (err) {
-        if (err) return res.status(500).json({ error: err.message });
-        res.json({ success: true });
-      }
-  );
+  try {
+    const course = await Course.findByIdAndUpdate(
+      req.params.id,
+      { status: 'rejected', reject_reason }
+    );
+    if (!course) return res.status(404).json({ error: "Курс не знайдено" });
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-app.post('/register', (req, res) => {
-  const { username, password, firstName, lastName, role } = req.body;
-
-  // 1. Перевіряємо, чи немає вже такого юзера
-  db.get(
-    "SELECT * FROM users WHERE username = ?",
-    [username],
-    (err, row) => {
-      if (err) return res.status(500).json({ error: err.message });
-      if (row) return res.status(400).json({ error: "Користувач з таким логіном вже існує" });
-
-      // 2. Зберігаємо нового користувача в БД
-      db.run(
-        "INSERT INTO users (username, password, role, firstName, lastName) VALUES (?, ?, ?, ?, ?)",
-        [username, password, role, firstName, lastName],
-        function (err) {
-          if (err) return res.status(500).json({ error: err.message });
-
-          // 3. Повертаємо об'єкт нового користувача
-          const newUser = {
-            id: this.lastID,
-            username,
-            role,
-            firstName,
-            lastName
-          };
-
-          res.json({ success: true, user: newUser });
-        }
-      );
-    }
-  );
-});
-// --- ЗАПУСК СЕРВЕРА ---
-
-app.listen(5000, () => console.log('Server running on port 5000'));
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
