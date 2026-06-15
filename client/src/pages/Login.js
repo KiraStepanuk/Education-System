@@ -4,6 +4,7 @@ import Footer from '../components/Layout/Footer/Footer';
 import Input from '../components/UI/Input/Input';
 import Button from '../components/UI/Button/Button';
 import mainIcon from '../components/Layout/Header/assets/main.png';
+import { API_URL } from '../config';
 import './Login.css';
 
 const Login = ({ setUser }) => {
@@ -16,7 +17,6 @@ const Login = ({ setUser }) => {
   const [lastName, setLastName] = useState('');
   const [isModerator, setIsModerator] = useState(false);
 
-  // Завдання 3: Передаємо об'єкт лише з роллю (без ID)
   const handleGuestLogin = () => {
     const guestUser = { role: 'guest' };
     setUser(guestUser);
@@ -27,7 +27,7 @@ const Login = ({ setUser }) => {
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('http://localhost:5000/login', {
+      const response = await fetch(`${API_URL}/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password })
@@ -53,7 +53,7 @@ const Login = ({ setUser }) => {
     const role = isModerator ? 'admin' : 'user';
 
     try {
-      const response = await fetch('http://localhost:5000/register', {
+      const response = await fetch(`${API_URL}/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password, firstName, lastName, role })
@@ -63,7 +63,6 @@ const Login = ({ setUser }) => {
 
       if (response.ok && data.success) {
         alert('Реєстрація успішна! Тепер ви можете увійти.');
-        // Перемикаємо на логін і очищаємо пароль для безпеки
         setIsLoginView(true);
         setPassword('');
         setFirstName('');
@@ -93,9 +92,7 @@ const Login = ({ setUser }) => {
             </span>
           </div>
 
-          {/* Завдання 2: Два варіанти верстки (логін/реєстрація) */}
           {isLoginView ? (
-            // ВАРІАНТ 1: ВХІД
             <form className="login-form-element" onSubmit={handleLoginSubmit}>
               <h2 className="form-heading-title">LOGIN</h2>
 
@@ -126,7 +123,6 @@ const Login = ({ setUser }) => {
               </div>
             </form>
           ) : (
-            // ВАРІАНТ 2: РЕЄСТРАЦІЯ
             <form className="login-form-element" onSubmit={handleRegisterSubmit}>
               <h2 className="form-heading-title">REGISTRATION</h2>
 

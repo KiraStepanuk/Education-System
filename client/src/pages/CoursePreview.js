@@ -4,6 +4,7 @@ import Header from '../components/Layout/Header/Header';
 import Footer from '../components/Layout/Footer/Footer';
 import Button from '../components/UI/Button/Button';
 import RejectModal from '../components/Unique/RejectModal/RejectModal';
+import { API_URL } from '../config';
 import './CoursePreview.css';
 
 const CoursePreview = ({ user }) => {
@@ -15,7 +16,7 @@ const CoursePreview = ({ user }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
-    fetch(`http://localhost:5000/courses/${id}`)
+    fetch(`${API_URL}/courses/${id}`)
       .then((res) => res.json())
       .then((data) => {
         setCourse(data);
@@ -29,7 +30,7 @@ const CoursePreview = ({ user }) => {
 
   const handleApprove = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/courses/${id}/approve`, {
+      const response = await fetch(`${API_URL}/courses/${id}/approve`, {
         method: 'PUT',
         headers: {
           'user_id': user?.id
@@ -49,7 +50,7 @@ const CoursePreview = ({ user }) => {
 
   const handleRejectConfirm = async (reason) => {
     try {
-      const response = await fetch(`http://localhost:5000/courses/${id}/reject`, {
+      const response = await fetch(`${API_URL}/courses/${id}/reject`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -75,7 +76,7 @@ const handleDelete = async () => {
   if (!confirmDelete) return;
 
   try {
-    const response = await fetch(`http://localhost:5000/courses/${id}`, {
+    const response = await fetch(`${API_URL}/courses/${id}`, {
       method: 'DELETE',
       headers: {
         'user_id': user?.id
