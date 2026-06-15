@@ -4,6 +4,9 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 
+// ДОДАНО: Імпортуємо бібліотеку Google
+const { OAuth2Client } = require('google-auth-library');
+
 const User = require('./models/User');
 const Course = require('./models/Course');
 
@@ -17,8 +20,11 @@ app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
 const mongoURI = process.env.MONGODB_URI;
 
 mongoose.connect(mongoURI)
-  .then(() => console.log('Успішно підключено до MongoDB Atlas'))
-  .catch(err => console.error('Помилка підключення до MongoDB:', err));
+    .then(() => console.log('Успішно підключено до MongoDB Atlas'))
+    .catch(err => console.error('Помилка підключення до MongoDB:', err));
+
+// ДОДАНО: Ініціалізуємо Google клієнт
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 // Middleware для перевірки ролей адміністратора
 async function checkRole(role) {
@@ -40,6 +46,49 @@ async function checkRole(role) {
 }
 
 // --- АВТОРИЗАЦІЯ ---
+
+// ДОДАНО: Маршрут для логіну/реєстрації через Google
+app.post('/auth/google', async (req, res) => {
+  const { token } = req.body;
+
+  try {
+    // 1. Розшифровуємо токен за допомогою Google
+    const ticket = await googleClient.verifyIdToken({
+      idToken: token,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+
+    // Використовуємо email від Google як username
+    const userEmail = payload.email;
+
+    // 2. Шукаємо користувача в базі за цим email
+    let user = await User.findOne({ username: userEmail });
+
+    // 3. Якщо користувача немає, створюємо нового
+    if (!user) {
+      // Генеруємо випадковий пароль (наприклад: 'k3a9x7vGg1!')
+      const dummyPassword = Math.random().toString(36).slice(-10) + 'Gg1!';
+
+      const newUser = new User({
+        username: userEmail,
+        password: dummyPassword, // Передаємо згенерований пароль
+        firstName: payload.given_name || '',
+        lastName: payload.family_name || '',
+        role: 'user'
+      });
+      user = await newUser.save();
+    }
+
+    // 4. Повертаємо об'єкт користувача на фронтенд
+    res.json({ success: true, user });
+
+  } catch (error) {
+    console.error("Помилка авторизації Google:", error);
+    res.status(401).json({ success: false, message: "Недійсний токен Google" });
+  }
+});
 
 app.post('/register', async (req, res) => {
   const { username, password, firstName, lastName, role } = req.body;
@@ -63,15 +112,15 @@ app.post('/register', async (req, res) => {
     const savedUser = await newUser.save();
 
     // 3. Повертаємо об'єкт створеного користувача (без пароля)
-    res.json({ 
-      success: true, 
+    res.json({
+      success: true,
       user: {
         id: savedUser._id,
         username: savedUser.username,
         role: savedUser.role,
         firstName: savedUser.firstName,
         lastName: savedUser.lastName
-      } 
+      }
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -164,9 +213,9 @@ app.put('/courses/:id', async (req, res) => {
 
   try {
     const updatedCourse = await Course.findByIdAndUpdate(
-      req.params.id,
-      { title, content, image, status: 'pending', reject_reason: '' },
-      { new: true }
+        req.params.id,
+        { title, content, image, status: 'pending', reject_reason: '' },
+        { new: true }
     );
     if (!updatedCourse) return res.status(404).json({ error: "Курс не знайдено" });
     res.json({ success: true });
@@ -210,8 +259,8 @@ app.put('/courses/:id/reject', async (req, res) => {
 
   try {
     const course = await Course.findByIdAndUpdate(
-      req.params.id,
-      { status: 'rejected', reject_reason }
+        req.params.id,
+        { status: 'rejected', reject_reason }
     );
     if (!course) return res.status(404).json({ error: "Курс не знайдено" });
     res.json({ success: true });
