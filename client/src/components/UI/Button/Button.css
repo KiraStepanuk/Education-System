@@ -1,27 +1,56 @@
 .button {
-    padding: 12px 24px;
-    border: none;
-    border-radius: 8px;
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px; /* Заокруглені кнопки */
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: inherit;
 }
 
-.button-red {
-    background-color: #e53935;
-    color: white;
+.button-primary {
+  background-color: var(--primary-blue);
+  color: white;
 }
 
-.button-red:hover {
-    background-color: #c62828;
+.button-primary:hover {
+  background-color: var(--primary-hover);
 }
 
-.button-blue {
-    background-color: #1e88e5;
-    color: white;
+.button-outline {
+  background-color: transparent;
+  color: var(--primary-blue);
+  border: 1px solid var(--primary-blue);
 }
 
-.button-blue:hover {
-    background-color: #1565c0;
+.button-outline:hover {
+  background-color: #e0e7ff;
+}
+
+.button-danger {
+  background-color: var(--danger);
+  color: white;
+}
+
+.button-danger:hover {
+  background-color: #dc2626;
+}
+
+.button-arrow {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid var(--border-color);
+  background: white;
+  color: var(--text-main);
+  font-size: 20px;
+}
+
+.button-arrow:hover {
+  background: var(--border-color);
 }

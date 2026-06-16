@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import Header from '../components/Layout/Header/Header';
+import Header from '../components/Layout/TopNav/TopNav';
 import Footer from '../components/Layout/Footer/Footer';
 import Button from '../components/UI/Button/Button';
 import RejectModal from '../components/Unique/RejectModal/RejectModal';
@@ -107,7 +107,6 @@ const handleDelete = async () => {
 
   return (
     <div className="preview-page">
-      <Header role={isAdmin ? 'Адмін' : 'Користувач'} />
 
       <main className="preview-container">
         <div className="preview-header-row">
