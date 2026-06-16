@@ -30,12 +30,11 @@ body {
   flex-grow: 1;
   display: flex;
   flex-direction: column;
-  min-width: 0; /* Позволяет flex-элементу сжиматься/растягиваться правильно */
+  min-width: 0;
   width: 100%;
-  /* max-width удаляем совсем! */
+
 }
 
-/* Добавьте это, чтобы убрать лишние отступы у браузера */
 * {
   box-sizing: border-box;
 }

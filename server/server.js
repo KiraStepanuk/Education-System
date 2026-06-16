@@ -1,31 +1,27 @@
-require('dotenv').config();
 const express = require('express');
-const mongoose = require('mongoose');
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const mongoose = require('mongoose');
+const dotenv = require('dotenv');
 
-// ДОДАНО: Імпортуємо бібліотеку Google
-const { OAuth2Client } = require('google-auth-library');
+dotenv.config();
 
 const User = require('./models/User');
 const Course = require('./models/Course');
 const Review = require('./models/Review');
 
 const app = express();
-app.use(cors());
+const PORT = process.env.PORT || 5000;
 
-// Збільшуємо ліміт для JSON, оскільки картинки в Base64 займають багато місця
-app.use(bodyParser.json({ limit: '10mb' }));
+app.use(cors());
+app.use(express.json());
 app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
 
 const mongoURI = process.env.MONGODB_URI;
 
 mongoose.connect(mongoURI)
-    .then(() => console.log('Успішно підключено до MongoDB Atlas'))
-    .catch(err => console.error('Помилка підключення до MongoDB:', err));
-
-// ДОДАНО: Ініціалізуємо Google клієнт
-const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+  .then(() => console.log('Успішно підключено до MongoDB Atlas'))
+  .catch(err => console.error('Помилка підключення до MongoDB:', err));
 
 // Middleware для перевірки ролей адміністратора
 async function checkRole(role) {
@@ -46,51 +42,42 @@ async function checkRole(role) {
   };
 }
 
-// --- АВТОРИЗАЦІЯ ---
-
-// ДОДАНО: Маршрут для логіну/реєстрації через Google
+// --- АВТОРИЗАЦІЯ ЧЕРЕЗ GOOGLE ---
 app.post('/auth/google', async (req, res) => {
-  const { token } = req.body;
+  const { profile } = req.body;
+
+  if (!profile || !profile.email) {
+    return res.status(400).json({ success: false, message: "Недійсні дані профілю Google" });
+  }
 
   try {
-    // 1. Розшифровуємо токен за допомогою Google
-    const ticket = await googleClient.verifyIdToken({
-      idToken: token,
-      audience: process.env.GOOGLE_CLIENT_ID,
-    });
-
-    const payload = ticket.getPayload();
-
-    // Використовуємо email від Google як username
-    const userEmail = payload.email;
-
-    // 2. Шукаємо користувача в базі за цим email
+    const userEmail = profile.email;
     let user = await User.findOne({ username: userEmail });
 
-    // 3. Якщо користувача немає, створюємо нового
+    // Якщо користувача з такою поштою немає, створюємо новий аккаунт
     if (!user) {
-      // Генеруємо випадковий пароль (наприклад: 'k3a9x7vGg1!')
       const dummyPassword = Math.random().toString(36).slice(-10) + 'Gg1!';
-
+      
       const newUser = new User({
         username: userEmail,
-        password: dummyPassword,
-        firstName: payload.given_name || '',
-        lastName: payload.family_name || '',
-        role: 'user'
+        password: dummyPassword, // Тимчасовий пароль для валідації схеми
+        firstName: profile.given_name || 'User',
+        lastName: profile.family_name || 'Google',
+        role: 'user' // Роль за замовчуванням
       });
 
       user = await newUser.save();
     }
 
-    // 4. Повертаємо об'єкт користувача на фронтенд
     res.json({ success: true, user });
 
   } catch (error) {
-    console.error("Помилка авторизації Google:", error);
-    res.status(401).json({ success: false, message: "Недійсний токен Google" });
+    console.error("Помилка під час авторизації через Google:", error);
+    res.status(500).json({ success: false, message: "Помилка сервера при авторизації" });
   }
 });
+
+// --- СТАНДАРТНА АВТОРИЗАЦІЯ ---
 
 app.post('/register', async (req, res) => {
   const { username, password, firstName, lastName, role } = req.body;
@@ -292,5 +279,4 @@ app.put('/courses/:id/reject', async (req, res) => {
   }
 });
 
-const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
