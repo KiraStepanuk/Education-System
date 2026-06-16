@@ -14,7 +14,7 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
 app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
 
 const mongoURI = process.env.MONGODB_URI;
@@ -221,12 +221,35 @@ app.put('/courses/:id', async (req, res) => {
     const updatedCourse = await Course.findByIdAndUpdate(
         req.params.id,
         { title, content, image, status: 'pending', reject_reason: '' },
-        { new: true }
+        { returnDocument: 'after' }
     );
 
     if (!updatedCourse) return res.status(404).json({ error: "Курс не знайдено" });
 
     res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// --- ЗМІНА ПАРОЛЯ ---
+app.put('/users/:id/password', async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ error: "Користувача не знайдено" });
+
+    // Перевіряємо, чи правильний поточний пароль
+    if (user.password !== currentPassword) {
+      return res.status(400).json({ error: "Невірний поточний пароль" });
+    }
+
+    // Зберігаємо новий пароль
+    user.password = newPassword;
+    await user.save();
+
+    res.json({ success: true, message: "Пароль успішно змінено" });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -250,11 +273,31 @@ app.delete('/courses/:id', async (req, res) => {
   }
 });
 
+// --- ОНОВЛЕННЯ ДАНИХ КОРИСТУВАЧА ---
+app.put('/users/:id', async (req, res) => {
+  const { firstName, lastName, avatar } = req.body;
+
+  try {
+    const updatedUser = await User.findByIdAndUpdate(
+        req.params.id,
+        { firstName, lastName, avatar },
+        { returnDocument: 'after', select: '-password' } // Повертаємо оновленого юзера без пароля
+    );
+
+    if (!updatedUser) return res.status(404).json({ error: "Користувача не знайдено" });
+
+    res.json({ success: true, user: updatedUser });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // --- РОУТИ МОДЕРАЦІЇ ---
 
 app.put('/courses/:id/approve', async (req, res) => {
   try {
-    const course = await Course.findByIdAndUpdate(req.params.id, { status: 'approved' });
+    const course = await Course.findByIdAndUpdate(req.params.id, { status: 'approved' },
+        { returnDocument: 'after', select: '-password' });
     if (!course) return res.status(404).json({ error: "Курс не знайдено" });
     res.json({ success: true });
   } catch (err) {

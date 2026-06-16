@@ -39,3 +39,7 @@ body {
   box-sizing: border-box;
 }
 
+.main-content.with-sidebar {
+  /* ВАЖНО: Замените 260px на точную ширину вашего сайдбара из Sidebar.css */
+  margin-left: 260px;
+}

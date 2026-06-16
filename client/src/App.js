@@ -18,30 +18,34 @@ function AppContent({ user, setUser }) {
   const location = useLocation();
   const isAuthPage = location.pathname === '/';
 
-  return (
-    <div className="app-wrapper">
+    return (
+        <div className="app-wrapper">
 
-      {!isAuthPage && <Sidebar user={user} />}
-      
-      <main className="main-content" style={{ backgroundColor: isAuthPage ? 'white' : 'var(--bg-color)' }}>
-        {!isAuthPage && <TopNav user={user} setUser={setUser} />}
-        
-        <div style={{ flex: 1, overflowY: 'auto' }}>
-          <Routes>
-              <Route path="/" element={<Login setUser={setUser} />} />
-              <Route path="/home" element={<Home user={user} />} />
-              <Route path="/all-courses" element={<AllCourses user={user} />} />
-              <Route path="/library" element={user ? <MyLibrary user={user} /> : <Navigate to="/" />} />
-              <Route path="/dashboard" element={user ? <Dashboard user={user} /> : <Navigate to="/" />} />
-              <Route path="/courses/:id" element={<CoursePreview user={user} />} />
-              <Route path="/create-course" element={<CourseEditor user={user} />} />
-              <Route path="/edit-course/:id" element={<CourseEditor user={user} />} />
-              <Route path="/publications" element={user ? <MyPublications user={user} /> : <Navigate to="/" />} />
-          </Routes>
+            {!isAuthPage && <Sidebar user={user} />}
+
+            {/* ДОБАВЛЕН КЛАСС with-sidebar */}
+            <main
+                className={`main-content ${!isAuthPage ? 'with-sidebar' : ''}`}
+                style={{ backgroundColor: isAuthPage ? 'white' : 'var(--bg-color)' }}
+            >
+                {!isAuthPage && <TopNav user={user} setUser={setUser} />}
+
+                <div style={{ flex: 1, overflowY: 'auto' }}>
+                      <Routes>
+                          <Route path="/" element={<Login setUser={setUser} />} />
+                          <Route path="/home" element={<Home user={user} />} />
+                          <Route path="/all-courses" element={<AllCourses user={user} />} />
+                          <Route path="/library" element={user ? <MyLibrary user={user} /> : <Navigate to="/" />} />
+                          <Route path="/dashboard" element={<Dashboard user={user} setUser={setUser} />} />
+                          <Route path="/courses/:id" element={<CoursePreview user={user} />} />
+                          <Route path="/create-course" element={<CourseEditor user={user} />} />
+                          <Route path="/edit-course/:id" element={<CourseEditor user={user} />} />
+                          <Route path="/publications" element={user ? <MyPublications user={user} /> : <Navigate to="/" />} />
+                      </Routes>
+                </div>
+            </main>
         </div>
-      </main>
-    </div>
-  );
+    );
 }
 
 
