@@ -53,7 +53,7 @@ const Home = ({ user }) => {
 
   const approvedCourses = courses.filter(c => c.status === 'approved');
   const pendingCourses = courses.filter(c => c.status === 'pending');
-  const myRejectedCourses = courses.filter(c => c.status === 'rejected' && c.author_id === user?.id);
+  // const myRejectedCourses = courses.filter(c => c.status === 'rejected' && c.author_id === user?.id);
 
   return (
     <div className="home-page-content">

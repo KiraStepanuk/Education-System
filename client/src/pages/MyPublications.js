@@ -10,7 +10,20 @@ const MyPublications = ({ user }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    // const fetchMyCourses = async () => {
+    //   try {
+    //     const response = await fetch(`${API_URL}/courses?author_id=${user.id}`);
+    //     const data = await response.json();
+    //     setCourses(data);
+    //     setLoading(false);
+    //   } catch (error) {
+    //     console.error("Помилка завантаження публікацій", error);
+    //     setLoading(false);
+    //   }
+    // };
+
     fetchMyCourses();
+
   }, [user.id]);
 
   const fetchMyCourses = async () => {
