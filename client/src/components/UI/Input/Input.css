@@ -1,42 +1,57 @@
 .custom-input-container {
   display: flex;
   flex-direction: column;
-  margin-bottom: 20px;
+  margin-bottom: 18px;
   width: 100%;
 }
 
 .input-label {
-  font-size: 16px;
-  color: #7d7d7d;
+  font-size: 14px;
+  color: #1e293b;
   margin-bottom: 8px;
+  font-weight: 500;
   text-align: left;
 }
 
-.custom-input {
-  border: none;
-  outline: none;
-  font-size: 16px;
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
   width: 100%;
-  transition: all 0.3s;
 }
 
-.custom-input-container.underline .custom-input {
-  border-bottom: 1px solid #b3b3b3;
-  padding: 8px 0;
-  background: transparent;
+.input-icon {
+  position: absolute;
+  left: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #94a3b8;
+  pointer-events: none;
 }
 
-.custom-input-container.underline .custom-input:focus {
-  border-bottom-color: #db4444;
-}
-
-.custom-input-container.boxed .custom-input {
-  background-color: #f5f5f5;
+.custom-input {
+  border: 1px solid #e2e8f0;
+  outline: none;
+  font-size: 15px;
+  width: 100%;
   padding: 12px 16px;
-  border-radius: 4px;
-  color: #000;
+  border-radius: 8px;
+  background-color: #ffffff;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+  color: #334155;
 }
 
-.custom-input-container.boxed .custom-input:focus {
-  background-color: #ececec;
+.custom-input.with-icon {
+  padding-left: 44px;
+}
+
+.custom-input:focus {
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.custom-input::placeholder {
+  color: #94a3b8;
 }

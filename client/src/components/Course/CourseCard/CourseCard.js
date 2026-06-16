@@ -1,66 +1,52 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import './CourseCard.css';
 import Button from '../../UI/Button/Button';
+import './CourseCard.css';
 
 const CourseCard = ({ course, variant, onApprove, onReject }) => {
     const navigate = useNavigate();
 
-    // СТВОРЮЄМО РОЗУМНУ ФУНКЦІЮ НАВІГАЦІЇ
     const handleNavigate = () => {
         if (variant === 'editable') {
-            navigate(`/edit-course/${course.id}`); // Веде в редактор
+            navigate(`/edit-course/${course.id}`);
         } else {
-            navigate(`/courses/${course.id}`); // Веде в режим перегляду
+            navigate(`/courses/${course.id}`);
         }
     };
 
     return (
-        <div className="course-card">
-            <div className="card-image-container">
-                {course.isMyCourse && <span className="blue-badge">Мій курс</span>}
-
-                {/* Якщо картинки немає, ставимо заглушку, щоб не ламався дизайн */}
-                <img
-                    src={course.image || 'https://via.placeholder.com/300x200?text=Немає+зображення'}
-                    alt={course.title}
-                    className="course-img"
-                />
-
-                <div className="heart-icon-container">
-                    <span className="heart-symbol">♡</span>
+        <div className="course-card-modern">
+            <img
+                src={course.image || 'https://via.placeholder.com/300x200?text=Course'}
+                alt={course.title}
+                className="cc-image"
+                onClick={handleNavigate}
+            />
+            
+            <div className="cc-body" onClick={handleNavigate}>
+                <h3 className="cc-title">{course.title}</h3>
+                <div className="cc-rating">
+                    ★ 4.9 <span>(128 відгуків)</span>
                 </div>
-
-                <div className="image-overlay">
-                    {/* 3. ВІШАЄМО ФУНКЦІЮ НА КНОПКУ */}
-                    <button className="overlay-btn" onClick={handleNavigate}>
-                        {variant === 'editable' ? 'Редагувати' : 'Переглянути'}
-                    </button>
+                
+                <div className="cc-footer">
+                    <div className="cc-author-avatar"></div>
+                    <span className="cc-author-name">Автор #{course.author_id}</span>
                 </div>
             </div>
 
-            <div className="card-content">
-                <h3 className="course-title">{course.title}</h3>
-                <div className="course-rating">
-                    <span className="stars">★★★★★</span>
-                    <span className="reviews-count">({course.reviews || 0})</span>
+            {variant === 'moderation' && (
+                <div className="cc-actions">
+                    <Button text="Погодити" onClick={() => onApprove(course.id)} />
+                    <Button text="Відхилити" variant="danger" onClick={() => onReject(course.id)} />
                 </div>
-
-                {variant === 'moderation' && (
-                    <div className="card-actions">
-                        <Button
-                            text="Погодити"
-                            variant="blue"
-                            onClick={() => onApprove(course.id)}
-                        />
-                        <Button
-                            text="Відхилити"
-                            variant="red"
-                            onClick={() => onReject(course.id)}
-                        />
-                    </div>
-                )}
-            </div>
+            )}
+            
+             {variant === 'editable' && (
+                <div className="cc-actions">
+                    <Button text="Редагувати" variant="outline" onClick={handleNavigate} />
+                </div>
+            )}
         </div>
     );
 };

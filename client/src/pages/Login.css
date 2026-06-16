@@ -1,169 +1,376 @@
-.login-page-container {
+.auth-page {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  width: 100%;
   background-color: #ffffff;
+  font-family: inherit;
 }
 
-.login-content {
-  flex: 1;
+/* Шапка авторизації */
+.auth-header {
+  height: 72px;
+  background-color: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 0 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.auth-logo {
+  font-size: 20px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.auth-header-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.auth-guest-link {
+  color: #475569;
+  text-decoration: none;
+  font-weight: 500;
+  cursor: pointer;
+  font-size: 14px;
+  transition: color 0.2s;
+  border-bottom: 1px solid #94a3b8;
+}
+
+.auth-guest-link:hover {
+  color: #4f46e5;
+  border-bottom-color: #4f46e5;
+}
+
+.auth-login-btn {
+  background-color: #4f46e5;
+  color: #ffffff;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.auth-login-btn:hover {
+  background-color: #4338ca;
+}
+
+/* Область контенту */
+.auth-main-content {
+  flex-grow: 1;
+  display: flex;
+  width: 100%;
+}
+
+/* Анімації переходу */
+.fade-in {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.25s ease-out, transform 0.25s ease-out;
+}
+
+.fade-out {
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.25s ease-in, transform 0.25s ease-in;
+}
+
+/* Екран авторизації (по центру) */
+.auth-centered {
   display: flex;
   justify-content: center;
   align-items: center;
+  width: 100%;
+  background: radial-gradient(circle at 80% 20%, #eef2ff 0%, #ffffff 50%, #f1f5f9 100%);
   padding: 40px 20px;
+  box-sizing: border-box;
 }
 
-.login-card-wrapper {
-  width: 100%;
-  max-width: 380px;
+.login-card-container {
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap: 24px;
+  width: 100%;
+  max-width: 440px;
 }
 
+.login-card {
+  background: #ffffff;
+  padding: 44px 40px;
+  border-radius: 16px;
+  border: 1px solid #f1f5f9;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+  width: 100%;
+  box-sizing: border-box;
+}
 
-.login-logo-container {
-  margin-bottom: 25px;
+.login-card-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.login-card-header h2 {
+  font-size: 32px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 8px 0;
+}
+
+.login-card-header p {
+  color: #64748b;
+  font-size: 14px;
+  margin: 0;
+}
+
+/* Бейджі безпеки */
+.security-badges {
   display: flex;
+  gap: 20px;
+  justify-content: center;
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.badge-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Кнопка відправки форми */
+.auth-submit-btn {
+  background-color: #4f46e5 !important;
+  color: white !important;
+  font-weight: 600 !important;
+  padding: 14px !important;
+  border-radius: 8px !important;
+  font-size: 16px !important;
+}
+
+.auth-submit-btn:hover {
+  background-color: #4338ca !important;
+}
+
+/* Екран реєстрації (Спліт-панель у межах картки) */
+.auth-split-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  background-color: #f8fafc;
+  padding: 40px;
+  box-sizing: border-box;
+}
+
+.registration-card {
+  display: flex;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 1040px;
+  min-height: 620px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+}
+
+.auth-left-panel {
+  flex: 1.1;
+  background-color: #1a2333;
+  color: #ffffff;
+  padding: 60px 48px;
+  display: flex;
+  flex-direction: column;
   justify-content: center;
 }
 
-.login-system-logo {
-  width: 200px;
-  height: auto;
+.auth-left-panel h1 {
+  font-size: 42px;
+  font-weight: 700;
+  line-height: 1.2;
+  margin: 0 0 16px 0;
+}
+
+.gradient-text {
+  color: #c7d2fe;
+}
+
+.left-panel-subtitle {
+  color: #94a3b8;
+  font-size: 15px;
+  line-height: 1.6;
+  max-width: 420px;
+  margin: 0 0 48px 0;
+}
+
+.feature-cards-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.feature-card {
+  background-color: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  padding: 16px 20px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  max-width: 440px;
+}
+
+.feature-icon-wrapper {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.edu-icon {
+  background-color: rgba(99, 102, 241, 0.2);
+}
+
+.mod-icon {
+  background-color: rgba(168, 85, 247, 0.2);
+}
+
+.feature-icon-img {
+  width: 20px;
+  height: 20px;
   object-fit: contain;
 }
 
-
-.guest-login-option {
-  margin-bottom: 40px;
-  text-align: center;
-}
-
-.guest-link {
-  color: #db4444;
-  font-size: 18px;
-  font-weight: 500;
-  text-decoration: underline;
-  cursor: pointer;
-  transition: color 0.2s ease;
-}
-
-.guest-link:hover {
-  color: #b53535;
-}
-
-
-.login-form-element {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
-
-.form-heading-title {
-  font-size: 20px;
+.feature-text h3 {
+  margin: 0 0 2px 0;
+  font-size: 15px;
   font-weight: 600;
-  text-align: center;
-  text-transform: uppercase;
-  letter-spacing: 1.5px;
-  margin: 0 0 20px 0;
-  color: #000000;
+  color: #ffffff;
 }
 
-.form-submit-wrapper {
-  margin-top: 20px;
-  display: flex;
-  justify-content: center;
-}
-
-.form-submit-wrapper .button {
-  width: 100%;
-  padding: 14px;
-  font-size: 14px;
-  font-weight: 500;
-  border-radius: 4px;
-  text-transform: capitalize;
-}
-
-
-.view-switch-text {
-  margin-top: 15px;
+.feature-text p {
+  margin: 0;
   font-size: 13px;
-  color: #7d7d7d;
-  text-align: center;
+  color: #94a3b8;
 }
 
-.switch-view-link {
-  color: #000000;
-  text-decoration: underline;
-  cursor: pointer;
-  font-weight: 500;
-  margin-left: 4px;
-}
-
-.switch-view-link:hover {
-  color: #db4444;
-}
-
-
-.moderator-checkbox-wrapper {
-  margin-top: 5px;
+/* Форма реєстрації (Права частина) */
+.auth-right-panel {
+  flex: 1.2;
   display: flex;
   justify-content: center;
   align-items: center;
-}
-
-.checkbox-custom-label {
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-  user-select: none;
-  gap: 10px;
-}
-
-.checkbox-hidden-input {
-  position: absolute;
-  opacity: 0;
-  cursor: pointer;
-  height: 0;
-  width: 0;
-}
-
-.checkbox-styled-box {
-  width: 18px;
-  height: 18px;
-  border: 1px solid #db4444;
+  padding: 48px;
   background-color: #ffffff;
-  border-radius: 4px;
+}
+
+.auth-form-container {
+  width: 100%;
+  max-width: 440px;
+}
+
+.auth-form-container h2 {
+  font-size: 28px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 6px 0;
+}
+
+.form-subtitle {
+  color: #64748b;
+  font-size: 14px;
+  margin: 0 0 24px 0;
+}
+
+/* Ролі */
+.role-selection-container {
+  margin-bottom: 20px;
+}
+
+.role-toggle {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.role-btn {
+  flex: 1;
+  padding: 12px;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 14px;
+  color: #475569;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.role-btn.active {
+  border-color: #4f46e5;
+  background-color: #eef2ff;
+  color: #4f46e5;
+}
+
+/* Групування полів форми */
+.name-fields-row {
+  display: flex;
+  gap: 16px;
+}
+
+.password-input-group {
   position: relative;
-  transition: background-color 0.2s, border-color 0.2s;
 }
 
-
-.checkbox-styled-box::after {
-  content: "";
-  position: absolute;
-  display: none;
-  left: 5px;
-  top: 1px;
-  width: 5px;
-  height: 10px;
-  border: solid white;
-  border-width: 0 2px 2px 0;
-  transform: rotate(45deg);
-}
-
-.checkbox-hidden-input:checked ~ .checkbox-styled-box {
-  background-color: #db4444;
-  border-color: #db4444;
-}
-
-.checkbox-hidden-input:checked ~ .checkbox-styled-box::after {
+.password-tip {
   display: block;
+  font-size: 12px;
+  color: #64748b;
+  margin-top: -12px;
+  margin-bottom: 16px;
 }
 
-.checkbox-label-text {
-  font-size: 13px;
-  color: #333333;
+.auth-switch {
+  text-align: center;
+  margin-top: 24px;
+  font-size: 14px;
+  color: #64748b;
+}
+
+.auth-switch span {
+  color: #4f46e5;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.auth-switch span:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 900px) {
+  .registration-card {
+    flex-direction: column;
+  }
+  .auth-left-panel {
+    padding: 40px;
+  }
+  .auth-right-panel {
+    padding: 40px 24px;
+  }
 }

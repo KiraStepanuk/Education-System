@@ -1,61 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Header from '../components/Layout/Header/Header';
-import Footer from '../components/Layout/Footer/Footer';
-import CourseCarousel from '../components/Course/CourseCarousel/CourseCarousel';
-import Button from '../components/UI/Button/Button';
+import CourseCard from '../components/Course/CourseCard/CourseCard';
 import { API_URL } from '../config';
 import './Home.css';
 
-import financeImg from '../components/Course/CourseCarousel/assets/Finance.png';
-import pythonImg from '../components/Course/CourseCarousel/assets/Python.png';
-import englishImg from '../components/Course/CourseCarousel/assets/English.png';
-import interviewImg from '../components/Course/CourseCarousel/assets/Interview.png';
-import psychologyImg from '../components/Course/CourseCarousel/assets/Psychology.png';
-import securityImg from '../components/Course/CourseCarousel/assets/Security.png';
-import excelImg from '../components/Course/CourseCarousel/assets/Excel.png';
-
-const DEFAULT_MOCK_COURSES = [
-  { id: 1, title: "Основи фінансової грамотності для початківців", image: financeImg, reviews: 88, status: "approved", author_id: 2 },
-  { id: 2, title: "Вступ до програмування на Python", image: pythonImg, reviews: 75, status: "approved", author_id: 999 },
-  { id: 3, title: "Англійська для повсякденного спілкування: корисні фрази та поради", image: englishImg, reviews: 99, status: "approved", author_id: 999 },
-  { id: 4, title: "Як підготуватися до співбесіди", image: interviewImg, reviews: 98, status: "approved", author_id: 999 },
-  { id: 5, title: "Психологія мотивації: як досягати поставлених цілей", image: psychologyImg, reviews: 99, status: "approved", author_id: 999 },
-  { id: 6, title: "Основи цифрової безпеки", image: securityImg, reviews: 88, status: "rejected", author_id: 2 },
-  { id: 7, title: "Робота з даними в Excel: від базових формул до автоматизації", image: excelImg, reviews: 75, status: "rejected", author_id: 2 },
-  { id: 8, title: "Основи Python (на модерацію)", image: pythonImg, reviews: 12, status: "pending", author_id: 3 }
-];
-
 const Home = ({ user }) => {
-  const navigate = useNavigate();
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
-  let userRoleText = 'Гість';
-  if (user) {
-    if (user.role === 'admin') userRoleText = 'Адмін';
-    else if (user.role === 'user') userRoleText = 'Користувач';
-  }
-
-  const loadCourses = () => {
+  useEffect(() => {
     fetch(`${API_URL}/courses`)
-      .then((res) => {
-        if (!res.ok) throw new Error('Помилка сервера');
-        return res.json();
-      })
+      .then((res) => res.json())
       .then((data) => {
         setCourses(data);
         setLoading(false);
       })
       .catch((err) => {
-        console.warn("Сервер не доступний або база порожня. Використовуються локальні дані:", err);
-        setCourses(DEFAULT_MOCK_COURSES);
+        console.error("Помилка завантаження", err);
         setLoading(false);
       });
-  };
-
-  useEffect(() => {
-    loadCourses();
   }, []);
 
   const handleApprove = async (courseId) => {
@@ -64,113 +28,102 @@ const Home = ({ user }) => {
         method: 'PUT',
         headers: { 'user_id': user?.id }
       });
-
       if (response.ok) {
-        setCourses(prevCourses =>
-          prevCourses.map(c => c.id === courseId ? { ...c, status: 'approved' } : c)
-        );
-      } else {
-        alert('Помилка при погодженні курсу');
+        setCourses(prev => prev.map(c => c.id === courseId ? { ...c, status: 'approved' } : c));
       }
-    } catch (error) {
-      console.error('Помилка запиту:', error);
-    }
+    } catch (error) {}
   };
 
   const handleReject = async (courseId) => {
     const reason = prompt("Введіть причину відхилення:");
     if (!reason) return;
-
     try {
       const response = await fetch(`${API_URL}/courses/${courseId}/reject`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'user_id': user?.id
-        },
+        headers: { 'Content-Type': 'application/json', 'user_id': user?.id },
         body: JSON.stringify({ reject_reason: reason })
       });
-
       if (response.ok) {
-        setCourses(prevCourses =>
-          prevCourses.map(c => c.id === courseId ? { ...c, status: 'rejected' } : c)
-        );
-      } else {
-        alert('Помилка при відхиленні курсу');
+         setCourses(prev => prev.map(c => c.id === courseId ? { ...c, status: 'rejected' } : c));
       }
-    } catch (error) {
-      console.error('Помилка запиту:', error);
-    }
+    } catch (error) {}
   };
 
-  const processedCourses = courses.map(course => ({
-    ...course,
-    isMyCourse: user && course.author_id === user.id
-  }));
+  if (loading) return <div style={{padding: '40px'}}>Завантаження...</div>;
 
-  const approvedCourses = processedCourses.filter(c => c.status === 'approved');
-  const myRejectedCourses = processedCourses.filter(c => c.status === 'rejected' && c.author_id === (user?.id || 2));
-  const pendingCourses = processedCourses.filter(c => c.status === 'pending');
-
-  if (loading) {
-    return (
-      <div className="home-page">
-        <Header role={userRoleText} />
-        <div className="home-loading">Завантаження курсів...</div>
-        <Footer />
-      </div>
-    );
-  }
+  const approvedCourses = courses.filter(c => c.status === 'approved');
+  const pendingCourses = courses.filter(c => c.status === 'pending');
+  const myRejectedCourses = courses.filter(c => c.status === 'rejected' && c.author_id === user?.id);
 
   return (
-    <div className="home-page">
-      <Header role={userRoleText} />
+    <div className="home-page-content">
+      <h1 className="home-header-title">
+        {user?.role === 'admin' ? "Панель модерації" : "Вітаємо в Open Learning Collective"}
+      </h1>
+      <p className="home-subtitle">
+        {user?.role === 'admin' ? "Перевірте курси, що очікують на публікацію" : "Твій простір для навчання та спільного розвитку."}
+      </p>
 
-      <main className="home-container">
-        {user?.role === 'admin' ? (
-          <section className="moderator-section">
-            <CourseCarousel
-              title="Курси що потребують модерації"
-              courses={pendingCourses}
-              variant="moderation"
-              onApprove={handleApprove}
-              onReject={handleReject}
-            />
-          </section>
-        ) : (
-          <>
-            {user?.role !== 'guest' && (
-              <div className="home-action-row">
-                <Button
-                  text="Створити свій курс"
-                  variant="red"
-                  onClick={() => navigate('/create-course')}
+      {user?.role === 'admin' ? (
+        /* --- ВИГЛЯД ДЛЯ АДМІНА --- */
+        <section>
+          <div className="section-header"><h2>🛡️ Потребують модерації</h2></div>
+          {pendingCourses.length > 0 ? (
+            <div className="courses-grid">
+              {pendingCourses.map(course => (
+                <CourseCard 
+                  key={course.id} 
+                  course={course} 
+                  variant="moderation" 
+                  onApprove={handleApprove} 
+                  onReject={handleReject} 
                 />
+              ))}
+            </div>
+          ) : (
+            <p>Наразі немає нових запитів на модерацію.</p>
+          )}
+        </section>
+      ) : (
+        /* --- ВИГЛЯД ДЛЯ ЗВИЧАЙНОГО КОРИСТУВАЧА --- */
+        <>
+          <div className="home-top-grid">
+            {/* Ліва колонка: Топ рейтингу */}
+            <div className="home-top-left">
+              <div className="section-header">
+                <h2><span style={{color: 'var(--primary-blue)'}}>★</span> Топ за рейтингом</h2>
               </div>
-            )}
+              <div className="courses-grid-horizontal">
+                {approvedCourses.slice(0, 2).map((course, idx) => (
+                  <CourseCard key={course.id} course={course} variant="compact" />
+                ))}
+              </div>
+            </div>
 
-            <section className="user-section">
-              <CourseCarousel
-                title="Курси які можна прочитати"
-                courses={approvedCourses}
-                variant="view"
-              />
-            </section>
+            {/* Права колонка: Топ Користувач */}
+            <div className="home-top-right">
+              <div className="section-header"><h2>Найкращий користувач</h2></div>
+              <div className="top-user-card">
+                 {/* ... вміст картки юзера ... */}
+                 <h3>Ігор Михайленко</h3>
+                 <button className="tu-btn">Переглянути профіль</button>
+              </div>
+            </div>
+          </div>
 
-            {user?.role !== 'guest' && myRejectedCourses.length > 0 && (
-              <section className="user-section">
-                <CourseCarousel
-                  title="Курси які потребують редагування"
-                  courses={myRejectedCourses}
-                  variant="editable"
-                />
-              </section>
-            )}
-          </>
-        )}
-      </main>
-
-      <Footer />
+          <section>
+            <div className="section-header">
+              <h2><span style={{color: 'var(--primary-blue)'}}>✓</span> Новинки</h2>
+              <span className="section-actions" onClick={()=>navigate('/all-courses')}>Дивитися всі</span>
+            </div>
+            <div className="courses-grid">
+              {approvedCourses.slice(0, 4).map(course => (
+                <CourseCard key={course.id} course={course} variant="compact" />
+              ))}
+            </div>
+          </section>
+        </>
+      )}
     </div>
   );
 };

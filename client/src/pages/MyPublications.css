@@ -1,0 +1,283 @@
+.publications-page {
+  padding: 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.pub-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 30px;
+}
+
+.pub-title h1 {
+  font-size: 32px;
+  margin: 0 0 8px 0;
+  font-weight: 700;
+}
+
+.pub-subtitle {
+  color: var(--text-muted);
+  font-size: 15px;
+}
+
+/* Статистика */
+.pub-stats-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  margin-bottom: 40px;
+}
+
+.pub-stat-card {
+  background: white;
+  border: 1px solid var(--border-color);
+  padding: 24px;
+  border-radius: 12px;
+}
+
+.pub-stat-card label {
+  display: block;
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
+.pub-stat-card .value {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.pub-stat-card .star {
+  color: #6366f1;
+  margin-left: 8px;
+}
+
+/* Секція "Мої курси" */
+.my-courses-section {
+  margin-bottom: 50px;
+}
+
+.section-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.section-header-row h2 {
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.table-controls {
+  display: flex;
+  gap: 12px;
+}
+
+.search-mini {
+  position: relative;
+  width: 240px;
+}
+
+.search-mini input {
+  width: 100%;
+  padding: 10px 12px 10px 35px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: #f1f5f9;
+  font-size: 14px;
+}
+
+.filter-btn-outline {
+  padding: 0 16px;
+  border: 1px solid var(--border-color);
+  background: white;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+/* Таблиця */
+.courses-table-container {
+  background: white;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.table-header {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  padding: 16px 24px;
+  background: #f8fafc;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.table-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  padding: 20px 24px;
+  align-items: center;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.table-row:last-child { border-bottom: none; }
+
+.course-info-cell {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.course-mini-img {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  object-fit: cover;
+  background: #eee;
+}
+
+.course-text-meta h4 {
+  margin: 0 0 4px 0;
+  font-size: 15px;
+}
+
+.course-text-meta span {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.date-cell {
+  font-size: 14px;
+  color: #475569;
+}
+
+.actions-cell {
+  display: flex;
+  gap: 12px;
+}
+
+.btn-sm {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: opacity 0.2s;
+}
+
+.btn-view { background: #ecfdf5; color: #10b981; }
+.btn-edit-sm { background: #f0fdf4; color: #22c55e; }
+.btn-delete-sm { background: #fef2f2; color: #ef4444; }
+
+/* Секція відхилених */
+.rejected-section h2 {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 22px;
+  margin-bottom: 24px;
+}
+
+.count-badge {
+  background: #ef4444;
+  color: white;
+  font-size: 12px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rejected-card {
+  background: white;
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 24px;
+  max-width: 450px;
+}
+
+.rej-card-top {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.rej-img {
+  width: 60px;
+  height: 60px;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+.rej-info-header {
+  flex: 1;
+}
+
+.rej-status-tag {
+  float: right;
+  background: #fef2f2;
+  color: #ef4444;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.rej-info-header h4 { margin: 0 0 4px 0; font-size: 15px; }
+.rej-info-header p { margin: 0; font-size: 12px; color: var(--text-muted); }
+
+.rej-desc {
+  font-size: 13px;
+  color: #64748b;
+  line-height: 1.5;
+  margin-bottom: 20px;
+}
+
+.rej-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.rej-btn-edit {
+  flex: 1.5;
+  background: var(--primary-blue);
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 8px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.rej-btn-del {
+  flex: 1;
+  background: white;
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  padding: 10px;
+  border-radius: 8px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+}
