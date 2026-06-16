@@ -1,77 +1,345 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Button from '../components/UI/Button/Button';
+import { API_URL } from '../config';
 import './Dashboard.css';
 
-const Dashboard = ({ user }) => {
+const Dashboard = ({ user, setUser }) => {
+  const [activeCoursesCount, setActiveCoursesCount] = useState(0);
+
+  // Ссилка на прихований input для фото
+  const fileInputRef = useRef(null);
+
+  // --- СТАНИ ДЛЯ МОДАЛОК ---
+  // Модалка пароля
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [passwordData, setPasswordData] = useState({ current: '', new: '', confirm: '' });
+  const [passwordError, setPasswordError] = useState('');
+
+  // Модалка профілю
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [profileData, setProfileData] = useState({ firstName: '', lastName: '' });
+
+  useEffect(() => {
+    if (user && user.id) {
+      const targetId = user._id || user.id;
+      fetch(`${API_URL}/courses?author_id=${targetId}`)
+          .then(res => res.json())
+          .then(data => {
+            const active = data.filter(c => c.status === 'approved');
+            setActiveCoursesCount(active.length);
+          })
+          .catch(err => console.error("Помилка завантаження статистики", err));
+    }
+  }, [user]);
+
+  // Функція для виведення дати з бази даних
+  const formatMembershipDate = (dateString) => {
+    if (!dateString) return "Невідомо";
+
+    const date = new Date(dateString);
+    const month = date.toLocaleString('uk-UA', { month: 'long' });
+    const year = date.getFullYear();
+
+    const capitalizedMonth = month.charAt(0).toUpperCase() + month.slice(1);
+
+    return (
+        <>
+          {capitalizedMonth}<br/>{year}
+        </>
+    );
+  };
+
+  // --- ЛОГІКА ЗАВАНТАЖЕННЯ АВАТАРА ---
+  const handleAvatarChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Захист від занадто великих файлів (макс. 2 МБ)
+    if (file.size > 2 * 1024 * 1024) {
+      return alert("Файл занадто великий! Будь ласка, виберіть фото розміром до 2 МБ.");
+    }
+
+    const reader = new FileReader();
+    reader.readAsDataURL(file); // Перетворюємо файл у Base64-рядок
+
+    reader.onloadend = async () => {
+      const base64Image = reader.result;
+      const targetId = user._id || user.id;
+
+      try {
+        const response = await fetch(`${API_URL}/users/${targetId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            firstName: user.firstName,
+            lastName: user.lastName,
+            avatar: base64Image
+          })
+        });
+
+        const data = await response.json();
+        if (response.ok && data.success) {
+          // Оновлюємо фото на екрані без перезавантаження
+          setUser({ ...user, avatar: data.user.avatar });
+          localStorage.setItem('user', JSON.stringify({ ...user, avatar: data.user.avatar }));
+        } else {
+          alert(`Помилка: ${data.error}`);
+        }
+      } catch (error) {
+        console.error("Помилка завантаження аватара", error);
+        alert("Помилка з'єднання з сервером");
+      }
+    };
+  };
+
+  // --- ЛОГІКА РЕДАГУВАННЯ ПРОФІЛЮ ---
+  const openProfileModal = () => {
+    setProfileData({ firstName: user.firstName, lastName: user.lastName });
+    setShowProfileModal(true);
+  };
+
+  const handleProfileSubmit = async (e) => {
+    e.preventDefault();
+    if (!profileData.firstName || !profileData.lastName) return;
+
+    const targetId = user._id || user.id;
+
+    try {
+      const response = await fetch(`${API_URL}/users/${targetId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ firstName: profileData.firstName, lastName: profileData.lastName })
+      });
+
+      const data = await response.json();
+      if (response.ok && data.success) {
+        setUser({ ...user, firstName: data.user.firstName, lastName: data.user.lastName });
+        localStorage.setItem('user', JSON.stringify({ ...user, firstName: data.user.firstName, lastName: data.user.lastName }));
+        setShowProfileModal(false);
+      } else {
+        alert(`Помилка: ${data.error}`);
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Помилка з'єднання з сервером");
+    }
+  };
+
+  // --- ЛОГІКА ЗМІНИ ПАРОЛЯ ---
+  const handlePasswordSubmit = async (e) => {
+    e.preventDefault();
+    setPasswordError('');
+
+    if (passwordData.new.length < 6) {
+      return setPasswordError('Новий пароль має бути не коротшим за 6 символів');
+    }
+    if (passwordData.new !== passwordData.confirm) {
+      return setPasswordError('Нові паролі не співпадають!');
+    }
+
+    const targetId = user._id || user.id;
+
+    try {
+      const response = await fetch(`${API_URL}/users/${targetId}/password`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          currentPassword: passwordData.current,
+          newPassword: passwordData.new
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        alert('Пароль успішно змінено!');
+        setShowPasswordModal(false);
+        setPasswordData({ current: '', new: '', confirm: '' });
+      } else {
+        setPasswordError(data.error || 'Помилка зміни пароля');
+      }
+    } catch (error) {
+      setPasswordError('Помилка з\'єднання з сервером');
+    }
+  };
+
   if (!user) return null;
 
   return (
-    <div className="profile-page">
-      <h1>Мій профіль</h1>
-      <p className="profile-subtitle">Керуйте своєю особистою інформацією та безпекою акаунта.</p>
+      <div className="profile-page">
+        <h1>Мій профіль</h1>
+        <p className="profile-subtitle">Керуйте своєю особистою інформацією та безпекою акаунта.</p>
 
-      <div className="profile-grid">
-        {/* Ліва колонка - Аватар */}
-        <div className="profile-card avatar-section">
-          <div className="avatar-circle-wrapper">
-             <div className="avatar-circle"></div>
-             <button className="avatar-edit-btn">✎</button>
+        <div className="profile-grid">
+          {/* --- ЛІВА КОЛОНКА --- */}
+          <div className="profile-card avatar-section">
+            <div className="avatar-circle-wrapper">
+              {user.avatar ? (
+                  <img src={user.avatar} alt="Avatar" className="avatar-circle" />
+              ) : (
+                  <div className="avatar-circle"></div>
+              )}
+              {/* Клік по олівцю */}
+              <button className="avatar-edit-btn" onClick={() => fileInputRef.current.click()}>✎</button>
+            </div>
+            <h2 style={{margin: '0 0 20px 0'}}>{user.firstName} {user.lastName}</h2>
+
+            {/* Прихований інпут для файлу */}
+            <input
+                type="file"
+                accept="image/png, image/jpeg, image/jpg, image/webp"
+                ref={fileInputRef}
+                style={{ display: 'none' }}
+                onChange={handleAvatarChange}
+            />
+
+            {/* Клік по кнопці */}
+            <Button text="Змінити фото" style={{width: '100%'}} onClick={() => fileInputRef.current.click()} />
           </div>
-          <h2 style={{margin: '0 0 20px 0'}}>{user.firstName} {user.lastName}</h2>
-          <Button text="Змінити фото" style={{width: '100%'}}/>
-          <p style={{fontSize: '12px', color: 'var(--text-muted)', marginTop: '20px', lineHeight: '1.5'}}>
-            Рекомендовано: JPG або PNG,<br/> мін. 400x400 пікселів.
-          </p>
+
+          {/* --- ПРАВА КОЛОНКА --- */}
+          <div>
+            <div className="profile-card">
+              <div className="info-header">
+                <h2>Особиста інформація</h2>
+                <span style={{color: 'var(--primary-blue)', cursor: 'pointer', fontSize: '14px', fontWeight:'500'}} onClick={openProfileModal}>
+                Редагувати
+              </span>
+              </div>
+
+              <div className="info-grid">
+                <div className="info-field">
+                  <label>Повне ім'я</label>
+                  <p><span className="info-icon">👤</span> {user.firstName}</p>
+                </div>
+                <div className="info-field">
+                  <label>Прізвище</label>
+                  <p><span className="info-icon">👤</span> {user.lastName}</p>
+                </div>
+                <div className="info-field">
+                  <label>Електронна пошта</label>
+                  <p><span className="info-icon">✉️</span> {user.username}</p>
+                </div>
+                <div className="info-field">
+                  <label>Пароль</label>
+                  <p style={{justifyContent: 'space-between', width: '100%'}}>
+                    <span><span className="info-icon">🔒</span> ********</span>
+                    <span
+                        style={{color: 'var(--primary-blue)', cursor: 'pointer', fontSize:'12px', fontWeight:'600'}}
+                        onClick={() => setShowPasswordModal(true)}
+                    >
+                    Змінити
+                  </span>
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="stats-grid">
+              <div className="stat-card">
+                <label>Членство з</label>
+                <h3>{formatMembershipDate(user.createdAt)}</h3>
+              </div>
+              <div className="stat-card">
+                <label>Активні курси</label>
+                <h3>{activeCoursesCount} Модулів</h3>
+              </div>
+              <div className="stat-card">
+                <label>Роль у системі</label>
+                <h3 style={{ textTransform: 'capitalize' }}>{user.role === 'admin' ? 'Модератор' : 'Користувач'}</h3>
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* Права колонка - Інформація */}
-        <div>
-          <div className="profile-card">
-            <div className="info-header">
-              <h2>Особиста інформація</h2>
-              <span style={{color: 'var(--primary-blue)', cursor: 'pointer', fontSize: '14px', fontWeight:'500'}}>Редагувати все</span>
-            </div>
-            
-            <div className="info-grid">
-              <div className="info-field">
-                <label>Повне ім'я</label>
-                <p><span className="info-icon">👤</span> {user.firstName}</p>
-              </div>
-              <div className="info-field">
-                <label>Прізвище</label>
-                <p><span className="info-icon">👤</span> {user.lastName}</p>
-              </div>
-              <div className="info-field">
-                <label>Електронна пошта</label>
-                <p><span className="info-icon">✉️</span> {user.username}</p>
-              </div>
-              <div className="info-field">
-                <label>Пароль</label>
-                <p style={{justifyContent: 'space-between', width: '100%'}}>
-                  <span><span className="info-icon">🔒</span> ********</span>
-                  <span style={{color: 'var(--primary-blue)', cursor: 'pointer', fontSize:'12px', fontWeight:'600'}}>Відкрити</span>
-                </p>
-              </div>
-            </div>
-          </div>
+        {/* ================= МОДАЛКИ ================= */}
 
-          <div className="stats-grid">
-            <div className="stat-card">
-              <label>Членство з</label>
-              <h3>Вересень<br/>2023</h3>
+        {/* 1. Модальне вікно редагування профілю */}
+        {showProfileModal && (
+            <div className="modal-overlay">
+              <div className="modal-content">
+                <h3>Редагування профілю</h3>
+
+                <form onSubmit={handleProfileSubmit}>
+                  <div className="modal-field">
+                    <label>Ім'я</label>
+                    <input
+                        type="text"
+                        required
+                        value={profileData.firstName}
+                        onChange={(e) => setProfileData({...profileData, firstName: e.target.value})}
+                    />
+                  </div>
+                  <div className="modal-field">
+                    <label>Прізвище</label>
+                    <input
+                        type="text"
+                        required
+                        value={profileData.lastName}
+                        onChange={(e) => setProfileData({...profileData, lastName: e.target.value})}
+                    />
+                  </div>
+
+                  <div className="modal-actions">
+                <span className="modal-cancel" onClick={() => setShowProfileModal(false)}>
+                  Скасувати
+                </span>
+                    <Button text="Зберегти" type="submit" />
+                  </div>
+                </form>
+              </div>
             </div>
-            <div className="stat-card">
-              <label>Активні курси</label>
-              <h3>12 Модулів</h3>
+        )}
+
+        {/* 2. Модальне вікно зміни пароля */}
+        {showPasswordModal && (
+            <div className="modal-overlay">
+              <div className="modal-content">
+                <h3>Зміна пароля</h3>
+                {passwordError && <div className="modal-error">{passwordError}</div>}
+
+                <form onSubmit={handlePasswordSubmit}>
+                  <div className="modal-field">
+                    <label>Поточний пароль</label>
+                    <input
+                        type="password"
+                        required
+                        value={passwordData.current}
+                        onChange={(e) => setPasswordData({...passwordData, current: e.target.value})}
+                    />
+                  </div>
+                  <div className="modal-field">
+                    <label>Новий пароль</label>
+                    <input
+                        type="password"
+                        required
+                        value={passwordData.new}
+                        onChange={(e) => setPasswordData({...passwordData, new: e.target.value})}
+                    />
+                  </div>
+                  <div className="modal-field">
+                    <label>Підтвердіть новий пароль</label>
+                    <input
+                        type="password"
+                        required
+                        value={passwordData.confirm}
+                        onChange={(e) => setPasswordData({...passwordData, confirm: e.target.value})}
+                    />
+                  </div>
+
+                  <div className="modal-actions">
+                <span className="modal-cancel" onClick={() => {
+                  setShowPasswordModal(false);
+                  setPasswordError('');
+                }}>Скасувати</span>
+                    <Button text="Зберегти" type="submit" />
+                  </div>
+                </form>
+              </div>
             </div>
-            <div className="stat-card">
-              <label>Роль у системі</label>
-              <h3 style={{ textTransform: 'capitalize' }}>{user.role === 'admin' ? 'Модератор' : 'Автор'}</h3>
-            </div>
-          </div>
-        </div>
+        )}
+
       </div>
-    </div>
   );
 };
 

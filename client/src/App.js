@@ -32,7 +32,7 @@ function AppContent({ user, setUser }) {
               <Route path="/home" element={<Home user={user} />} />
               <Route path="/all-courses" element={<AllCourses user={user} />} />
               <Route path="/library" element={user ? <MyLibrary user={user} /> : <Navigate to="/" />} />
-              <Route path="/dashboard" element={user ? <Dashboard user={user} /> : <Navigate to="/" />} />
+              <Route path="/dashboard" element={<Dashboard user={user} setUser={setUser} />} />
               <Route path="/courses/:id" element={<CoursePreview user={user} />} />
               <Route path="/create-course" element={<CourseEditor user={user} />} />
               <Route path="/edit-course/:id" element={<CourseEditor user={user} />} />
