@@ -5,7 +5,27 @@ const userSchema = new mongoose.Schema({
   password: { type: String, required: false },
   role: { type: String, required: true },
   firstName: { type: String, required: true },
-  lastName: { type: String, required: true }
+  lastName: { type: String, required: true },
+
+  avatar: {
+    type: String,
+    default: 'https://via.placeholder.com/150'
+  },
+
+  favorites: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Course'
+  }],
+
+  bio: {
+    type: String,
+    default: ''
+  },
+
+  createdAt: {
+    type: Date,
+    default: Date.now
+  }
 });
 
 // Віртуальне поле 'id', щоб не ламати фронтенд, який очікує 'id' замість '_id'

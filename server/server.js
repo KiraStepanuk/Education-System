@@ -8,6 +8,7 @@ dotenv.config();
 
 const User = require('./models/User');
 const Course = require('./models/Course');
+const Review = require('./models/Review');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -64,6 +65,7 @@ app.post('/auth/google', async (req, res) => {
         lastName: profile.family_name || 'Google',
         role: 'user' // Роль за замовчуванням
       });
+
       user = await newUser.save();
     }
 
@@ -160,7 +162,8 @@ app.get('/courses', async (req, res) => {
   if (status) filter.status = status;
 
   try {
-    const courses = await Course.find(filter);
+    const courses = await Course.find(filter)
+      .populate('author_id', 'firstName lastName avatar');
     res.json(courses);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -168,7 +171,14 @@ app.get('/courses', async (req, res) => {
 });
 
 app.post('/courses', async (req, res) => {
-  const { title, content, image, author_id } = req.body;
+  const {
+    title,
+    content,
+    image,
+    author_id,
+    category,
+    tags
+  } = req.body;
 
   try {
     const newCourse = new Course({
@@ -176,8 +186,11 @@ app.post('/courses', async (req, res) => {
       content,
       image,
       author_id,
+      category,
+      tags,
       status: 'pending'
     });
+
     const savedCourse = await newCourse.save();
     res.json({ success: true, course_id: savedCourse._id });
   } catch (err) {
@@ -187,8 +200,14 @@ app.post('/courses', async (req, res) => {
 
 app.get('/courses/:id', async (req, res) => {
   try {
-    const course = await Course.findById(req.params.id);
+    const course = await Course.findById(req.params.id)
+      .populate('author_id', 'firstName lastName avatar');
+
     if (!course) return res.status(404).json({ error: "Курс не знайдено" });
+
+    course.views += 1;
+    await course.save();
+
     res.json(course);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -204,7 +223,9 @@ app.put('/courses/:id', async (req, res) => {
         { title, content, image, status: 'pending', reject_reason: '' },
         { new: true }
     );
+
     if (!updatedCourse) return res.status(404).json({ error: "Курс не знайдено" });
+
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -218,7 +239,7 @@ app.delete('/courses/:id', async (req, res) => {
     const course = await Course.findById(req.params.id);
     if (!course) return res.status(404).json({ error: "Курс не знайдено" });
 
-    if (course.author_id !== userId) {
+    if (course.author_id.toString() !== userId) {
       return res.status(403).json({ error: "Forbidden" });
     }
 
@@ -249,7 +270,9 @@ app.put('/courses/:id/reject', async (req, res) => {
         req.params.id,
         { status: 'rejected', reject_reason }
     );
+
     if (!course) return res.status(404).json({ error: "Курс не знайдено" });
+
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
