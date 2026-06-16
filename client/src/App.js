@@ -1,16 +1,18 @@
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import CoursePreview from "./pages/CoursePreview";
 import CourseEditor from './pages/CourseEditor';
-import AllCourses from './pages/AllCourses'; // НОВИЙ
-import MyLibrary from './pages/MyLibrary';   // НОВИЙ
+import AllCourses from './pages/AllCourses';
+import MyLibrary from './pages/MyLibrary';
 import Sidebar from './components/Layout/Sidebar/Sidebar';
 import TopNav from './components/Layout/TopNav/TopNav';
+import MyPublications from './pages/MyPublications';
 import './App.css';
-import MyPublications from './pages/MyPublications'; // Імпортуйте нову сторінку
+
 
 function AppContent({ user, setUser }) {
   const location = useLocation();
@@ -18,9 +20,12 @@ function AppContent({ user, setUser }) {
 
   return (
     <div className="app-wrapper">
+
       {!isAuthPage && <Sidebar user={user} />}
+      
       <main className="main-content" style={{ backgroundColor: isAuthPage ? 'white' : 'var(--bg-color)' }}>
         {!isAuthPage && <TopNav user={user} setUser={setUser} />}
+        
         <div style={{ flex: 1, overflowY: 'auto' }}>
           <Routes>
               <Route path="/" element={<Login setUser={setUser} />} />
@@ -39,16 +44,21 @@ function AppContent({ user, setUser }) {
   );
 }
 
+
 function App() {
     const [user, setUser] = useState(() => {
         const savedUser = localStorage.getItem('user');
         return savedUser ? JSON.parse(savedUser) : null;
     });
 
+    const googleClientId = process.env.REACT_APP_GOOGLE_CLIENT_ID || "469521632562-blrkn1tr3g3phi0bb6i9setn8bc9c4j6.apps.googleusercontent.com";
+
     return (
-        <Router>
-            <AppContent user={user} setUser={setUser} />
-        </Router>
+        <GoogleOAuthProvider clientId={googleClientId}>
+            <Router>
+                <AppContent user={user} setUser={setUser} />
+            </Router>
+        </GoogleOAuthProvider>
     );
 }
 
