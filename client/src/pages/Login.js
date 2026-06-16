@@ -5,6 +5,7 @@ import Footer from '../components/Layout/Footer/Footer';
 import Input from '../components/UI/Input/Input';
 import Button from '../components/UI/Button/Button';
 import mainIcon from '../components/Layout/Header/assets/main.png';
+import { API_URL } from '../config';
 import './Login.css';
 
 const Login = ({ setUser }) => {
@@ -27,7 +28,7 @@ const Login = ({ setUser }) => {
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('http://localhost:5000/login', {
+      const response = await fetch(`${API_URL}/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password })
@@ -53,7 +54,7 @@ const Login = ({ setUser }) => {
     const role = isModerator ? 'admin' : 'user';
 
     try {
-      const response = await fetch('http://localhost:5000/register', {
+      const response = await fetch(`${API_URL}/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password, firstName, lastName, role })
@@ -137,6 +138,7 @@ const Login = ({ setUser }) => {
                       variant="underline"
                   />
 
+
                   <div className="form-submit-wrapper">
                     <Button text="Login Account" variant="red" type="submit" />
                   </div>
@@ -167,6 +169,77 @@ const Login = ({ setUser }) => {
                       onChange={(e) => setUsername(e.target.value)}
                       placeholder="Username"
                       variant="underline"
+
+          {isLoginView ? (
+            <form className="login-form-element" onSubmit={handleLoginSubmit}>
+              <h2 className="form-heading-title">LOGIN</h2>
+
+              <Input
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="Username"
+                variant="underline"
+              />
+
+              <Input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Password"
+                variant="underline"
+              />
+
+              <div className="form-submit-wrapper">
+                <Button text="Login Account" variant="red" type="submit" />
+              </div>
+
+              <div className="view-switch-text">
+                Don't have an account?{' '}
+                <span className="switch-view-link" onClick={() => setIsLoginView(false)}>
+                  Registration
+                </span>
+              </div>
+            </form>
+          ) : (
+            <form className="login-form-element" onSubmit={handleRegisterSubmit}>
+              <h2 className="form-heading-title">REGISTRATION</h2>
+
+              <Input
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="Username"
+                variant="underline"
+              />
+
+              <Input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Password"
+                variant="underline"
+              />
+
+              <Input
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                placeholder="First Name"
+                variant="underline"
+              />
+
+              <Input
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                placeholder="Last Name"
+                variant="underline"
+              />
+
+              <div className="moderator-checkbox-wrapper">
+                <label className="checkbox-custom-label">
+                  <input
+                    type="checkbox"
+                    className="checkbox-hidden-input"
+                    checked={isModerator}
+                    onChange={(e) => setIsModerator(e.target.checked)}
                   />
 
                   <Input

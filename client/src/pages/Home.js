@@ -4,6 +4,7 @@ import Header from '../components/Layout/Header/Header';
 import Footer from '../components/Layout/Footer/Footer';
 import CourseCarousel from '../components/Course/CourseCarousel/CourseCarousel';
 import Button from '../components/UI/Button/Button';
+import { API_URL } from '../config';
 import './Home.css';
 
 import financeImg from '../components/Course/CourseCarousel/assets/Finance.png';
@@ -30,7 +31,6 @@ const Home = ({ user }) => {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
 
-
   let userRoleText = 'Гість';
   if (user) {
     if (user.role === 'admin') userRoleText = 'Адмін';
@@ -38,7 +38,7 @@ const Home = ({ user }) => {
   }
 
   const loadCourses = () => {
-    fetch('http://localhost:5000/courses')
+    fetch(`${API_URL}/courses`)
       .then((res) => {
         if (!res.ok) throw new Error('Помилка сервера');
         return res.json();
@@ -60,7 +60,7 @@ const Home = ({ user }) => {
 
   const handleApprove = async (courseId) => {
     try {
-      const response = await fetch(`http://localhost:5000/courses/${courseId}/approve`, {
+      const response = await fetch(`${API_URL}/courses/${courseId}/approve`, {
         method: 'PUT',
         headers: { 'user_id': user?.id }
       });
@@ -82,7 +82,7 @@ const Home = ({ user }) => {
     if (!reason) return;
 
     try {
-      const response = await fetch(`http://localhost:5000/courses/${courseId}/reject`, {
+      const response = await fetch(`${API_URL}/courses/${courseId}/reject`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -139,7 +139,6 @@ const Home = ({ user }) => {
           </section>
         ) : (
           <>
-
             {user?.role !== 'guest' && (
               <div className="home-action-row">
                 <Button
@@ -150,7 +149,6 @@ const Home = ({ user }) => {
               </div>
             )}
 
-
             <section className="user-section">
               <CourseCarousel
                 title="Курси які можна прочитати"
@@ -158,7 +156,6 @@ const Home = ({ user }) => {
                 variant="view"
               />
             </section>
-
 
             {user?.role !== 'guest' && myRejectedCourses.length > 0 && (
               <section className="user-section">

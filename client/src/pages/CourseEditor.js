@@ -4,6 +4,7 @@ import Header from '../components/Layout/Header/Header';
 import Footer from '../components/Layout/Footer/Footer';
 import SectionHeading from '../components/UI/SectionHeading/SectionHeading';
 import Button from '../components/UI/Button/Button';
+import { API_URL } from '../config';
 import './CourseEditor.css';
 
 const CourseEditor = ({ user }) => {
@@ -18,7 +19,6 @@ const CourseEditor = ({ user }) => {
   const [image, setImage] = useState('');
   const [loading, setLoading] = useState(isEditMode);
 
- 
   let userRoleText = 'Гість';
   if (user) {
     if (user.role === 'admin') userRoleText = 'Адмін';
@@ -27,7 +27,7 @@ const CourseEditor = ({ user }) => {
 
   useEffect(() => {
     if (isEditMode) {
-      fetch(`http://localhost:5000/courses/${id}`)
+      fetch(`${API_URL}/courses/${id}`)
         .then((res) => res.json())
         .then((data) => {
           setTitle(data.title || '');
@@ -76,8 +76,8 @@ const CourseEditor = ({ user }) => {
     };
 
     const url = isEditMode
-      ? `http://localhost:5000/courses/${id}`
-      : 'http://localhost:5000/courses';
+      ? `${API_URL}/courses/${id}`
+      : `${API_URL}/courses`;
 
     const method = isEditMode ? 'PUT' : 'POST';
 
