@@ -28,10 +28,14 @@ const CourseCard = ({ course, variant, onApprove, onReject }) => {
                 <div className="cc-rating">
                     ★ 4.9 <span>(128 відгуків)</span>
                 </div>
-                
+
                 <div className="cc-footer">
                     <div className="cc-author-avatar"></div>
-                    <span className="cc-author-name">Автор #{course.author_id}</span>
+                    <span className="cc-author-name">
+                        Автор #{typeof course.author_id === 'object'
+                            ? (course.author_id?.id || course.author_id?._id)
+                            : course.author_id}
+                    </span>
                 </div>
             </div>
 

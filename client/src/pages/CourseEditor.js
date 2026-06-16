@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import Header from '../components/Layout/TopNav/TopNav';
 import Footer from '../components/Layout/Footer/Footer';
 import SectionHeading from '../components/UI/SectionHeading/SectionHeading';
 import Button from '../components/UI/Button/Button';
