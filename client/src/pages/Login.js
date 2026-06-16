@@ -11,6 +11,7 @@ const Login = ({ setUser }) => {
   const [isLoginView, setIsLoginView] = useState(true);
   const navigate = useNavigate();
 
+  // Состояния для полей формы
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [firstName, setFirstName] = useState('');
@@ -18,7 +19,7 @@ const Login = ({ setUser }) => {
   const [isModerator, setIsModerator] = useState(false);
 
   const handleGuestLogin = () => {
-    const guestUser = { role: 'guest' };
+    const guestUser = { role: 'guest', username: 'Гість' };
     setUser(guestUser);
     localStorage.setItem('user', JSON.stringify(guestUser));
     navigate('/home');
@@ -35,7 +36,7 @@ const Login = ({ setUser }) => {
 
       const data = await response.json();
 
-      if (data.success) {
+      if (response.ok && data.success) {
         setUser(data.user);
         localStorage.setItem('user', JSON.stringify(data.user));
         navigate('/home');
@@ -61,7 +62,7 @@ const Login = ({ setUser }) => {
 
       const data = await response.json();
 
-      if (response.ok && data.success) {
+      if (response.ok) {
         alert('Реєстрація успішна! Тепер ви можете увійти.');
         setIsLoginView(true);
         setPassword('');
@@ -69,7 +70,7 @@ const Login = ({ setUser }) => {
         setLastName('');
         setIsModerator(false);
       } else {
-        alert(data.error || 'Помилка при реєстрації');
+        alert(data.error || data.message || 'Помилка при реєстрації');
       }
     } catch (error) {
       console.error('Помилка реєстрації:', error);
@@ -81,13 +82,13 @@ const Login = ({ setUser }) => {
     <div className="login-page-container">
       <main className="login-content">
         <div className="login-card-wrapper">
-
+          
           <div className="login-logo-container">
             <img src={mainIcon} alt="Education System Logo" className="login-system-logo" />
           </div>
 
           <div className="guest-login-option">
-            <span onClick={handleGuestLogin} className="guest-link">
+            <span onClick={handleGuestLogin} className="guest-link" style={{ cursor: 'pointer' }}>
               Увійти як гість
             </span>
           </div>
@@ -117,7 +118,7 @@ const Login = ({ setUser }) => {
 
               <div className="view-switch-text">
                 Don't have an account?{' '}
-                <span className="switch-view-link" onClick={() => setIsLoginView(false)}>
+                <span className="switch-view-link" onClick={() => setIsLoginView(false)} style={{ cursor: 'pointer', color: 'blue', textDecoration: 'underline' }}>
                   Registration
                 </span>
               </div>
@@ -174,16 +175,14 @@ const Login = ({ setUser }) => {
 
               <div className="view-switch-text">
                 Already have account?{' '}
-                <span className="switch-view-link" onClick={() => setIsLoginView(true)}>
+                <span className="switch-view-link" onClick={() => setIsLoginView(true)} style={{ cursor: 'pointer', color: 'blue', textDecoration: 'underline' }}>
                   Log in
                 </span>
               </div>
             </form>
           )}
-
         </div>
       </main>
-
       <Footer />
     </div>
   );
