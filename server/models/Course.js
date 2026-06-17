@@ -17,7 +17,6 @@ const courseSchema = new mongoose.Schema({
   rating: { type: Number, default: 5.0 },
   reviews: { type: Number, default: 0 },
 
-
   views: {
     type: Number,
     default: 0
@@ -42,6 +41,8 @@ const courseSchema = new mongoose.Schema({
     type: String,
     default: ''
   }
+}, {
+  timestamps: true
 });
 
 // Віртуальне поле 'id' для сумісності з фронтендом
