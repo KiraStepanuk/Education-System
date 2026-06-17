@@ -153,17 +153,43 @@ app.get('/users/:id', async (req, res) => {
 });
 
 // --- РОУТИ ДЛЯ КУРСІВ ---
-
 app.get('/courses', async (req, res) => {
-  const { author_id, status } = req.query;
-  const filter = {};
+  const { status, sort } = req.query;
 
-  if (author_id) filter.author_id = author_id;
+  console.log("SORT:", sort);
+  console.log("SORT RAW:", JSON.stringify(sort));
+
+  let filter = {};
   if (status) filter.status = status;
+
+  let sortOption = {};
+
+  switch (sort) {
+    case 'new':
+      sortOption = { createdAt: -1 };
+      break;
+
+    case 'old':
+      sortOption = { createdAt: 1 };
+      break;
+
+    case 'views':
+      sortOption = { views: -1 };
+      break;
+
+    case 'rating':
+      sortOption = { averageRating: -1 };
+      break;
+
+    default:
+      sortOption = { createdAt: -1 };
+  }
 
   try {
     const courses = await Course.find(filter)
-      .populate('author_id', 'firstName lastName avatar');
+      .populate('author_id', 'firstName lastName avatar')
+      .sort(sortOption);
+
     res.json(courses);
   } catch (err) {
     res.status(500).json({ error: err.message });
