@@ -145,7 +145,6 @@ app.get('/users/:id', async (req, res) => {
   }
 });
 
-// --- РОУТИ ДЛЯ КУРСІВ ---
 app.get('/courses', async (req, res) => {
   const { status, sort } = req.query;
 
@@ -176,11 +175,30 @@ app.get('/courses', async (req, res) => {
   }
 
   try {
+
     const courses = await Course.find(filter)
       .populate('author_id', 'firstName lastName avatar')
       .sort(sortOption);
 
-    res.json(courses);
+
+    const coursesWithAuthors = courses.map(c => {
+      const courseObj = c.toJSON();
+      
+      if (c.author_id) {
+        courseObj.authorName = `${c.author_id.firstName} ${c.author_id.lastName}`;
+        courseObj.authorAvatar = c.author_id.avatar || '';
+        
+
+        courseObj.author_id = c.author_id._id.toString();
+      } else {
+        courseObj.authorName = 'Невідомий автор';
+        courseObj.authorAvatar = '';
+      }
+      
+      return courseObj;
+    });
+
+    res.json(coursesWithAuthors);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -255,12 +273,10 @@ app.put('/users/:id/password', async (req, res) => {
     const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ error: "Користувача не знайдено" });
 
-    // Перевіряємо, чи правильний поточний пароль
     if (user.password !== currentPassword) {
       return res.status(400).json({ error: "Невірний поточний пароль" });
     }
 
-    // Зберігаємо новий пароль
     user.password = newPassword;
     await user.save();
 
