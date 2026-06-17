@@ -4,13 +4,13 @@ const User = require('./models/User');
 const Course = require('./models/Course');
 
 const usersData = [
-  { username: "admin", password: "admin123", role: "admin", firstName: "Олександр", lastName: "Коваленко" },
-  { username: "admin2", password: "admin123", role: "admin", firstName: "Дмитро", lastName: "Мороз" },
+  { username: "admin", password: "admin123", role: "admin", firstName: "Олександр", lastName: "Коваленко", avatar: "https://cdn.getmerlin.in/cms/img_AQO_Pe_Pie_STC_59p_Oy_Zo8mbm7d_5a6a9d88fe.png" },
+  { username: "admin2", password: "admin123", role: "admin", firstName: "Дмитро", lastName: "Мороз", avatar: "https://cdn.getmerlin.in/cms/img_AQO_Pe_Pie_STC_59p_Oy_Zo8mbm7d_5a6a9d88fe.png" },
   
-  { username: "user", password: "user123", role: "user", firstName: "Марія", lastName: "Шевченко" },
-  { username: "user2", password: "user123", role: "user", firstName: "Андрій", lastName: "Лисенко" },
-  { username: "user3", password: "user123", role: "user", firstName: "Ірина", lastName: "Кравченко" },
-  { username: "user4", password: "user123", role: "user", firstName: "Олена", lastName: "Мельник" }
+  { username: "user", password: "user123", role: "user", firstName: "Марія", lastName: "Шевченко", avatar: "https://fikiwiki.com/uploads/posts/2022-02/1644939029_1-fikiwiki-com-p-kartinki-krasivikh-lyudei-1.jpg" },
+  { username: "user2", password: "user123", role: "user", firstName: "Андрій", lastName: "Лисенко", avatar: "https://img.magnific.com/free-photo/handsome-unshaven-european-man-has-serious-self-confident-expression-wears-glasses_273609-17344.jpg?semt=ais_hybrid&w=740&q=80" },
+  { username: "user3", password: "user123", role: "user", firstName: "Ірина", lastName: "Кравченко", avatar: "https://img.magnific.com/free-photo/portrait-young-tender-woman-with-healthy-freckled-skin_158595-3947.jpg?semt=ais_hybrid&w=740&q=80" },
+  { username: "user4", password: "user123", role: "user", firstName: "Олена", lastName: "Мельник", avatar: "https://img.magnific.com/free-photo/horizontal-portrait-smiling-happy-young-pleasant-looking-female-wears-denim-shirt-stylish-glasses-with-straight-blonde-hair-expresses-positiveness-poses_176420-13176.jpg?semt=ais_hybrid&w=740&q=80" }
 ];
 
 const coursesData = [
@@ -111,7 +111,8 @@ async function seed() {
         status,
         reject_reason,
         rating: status === 'approved' ? 4.8 : 0,
-        reviews: status === 'approved' ? 15 : 0
+        reviews: status === 'approved' ? 15 : 0,
+        views: Math.floor(Math.random() * 5000) 
       };
     });
 

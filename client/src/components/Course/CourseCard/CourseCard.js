@@ -30,13 +30,23 @@ const CourseCard = ({ course, variant, onApprove, onReject }) => {
                 </div>
 
                 <div className="cc-footer">
-                    <div className="cc-author-avatar"></div>
-                    <span className="cc-author-name">
-                        Автор #{typeof course.author_id === 'object'
-                            ? (course.author_id?.id || course.author_id?._id)
-                            : course.author_id}
-                    </span>
-                </div>
+    {course.authorAvatar ? (
+        <img 
+            src={course.authorAvatar} 
+            alt={course.authorName || 'Автор'} 
+            className="cc-author-avatar" 
+            style={{ objectFit: 'cover' }} 
+        />
+    ) : (
+        <div className="cc-author-avatar"></div>
+    )}
+
+    <span className="cc-author-name">
+        {course.authorName || `Автор #${typeof course.author_id === 'object' 
+            ? (course.author_id?.id || course.author_id?._id) 
+            : course.author_id}`}
+    </span>
+</div>
             </div>
 
             {variant === 'moderation' && (

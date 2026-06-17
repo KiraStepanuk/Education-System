@@ -162,9 +162,30 @@ app.get('/courses', async (req, res) => {
   if (status) filter.status = status;
 
   try {
-    const courses = await Course.find(filter)
-      .populate('author_id', 'firstName lastName avatar');
-    res.json(courses);
+    // 1. Використовуємо .populate(), щоб одразу дістати дані юзера
+    const courses = await Course.find(filter).populate('author_id', 'firstName lastName avatar');
+    
+    // 2. Форматуємо результат для фронтенду
+    const coursesWithAuthors = courses.map(c => {
+      const courseObj = c.toJSON();
+      
+      // Якщо автор знайдений, записуємо його дані у зручні поля
+      if (c.author_id) {
+        courseObj.authorName = `${c.author_id.firstName} ${c.author_id.lastName}`;
+        courseObj.authorAvatar = c.author_id.avatar || '';
+        
+        // Повертаємо author_id назад як простий рядок (ID), 
+        // щоб не зламати інші місця на фронтенді, де очікується просто ID
+        courseObj.author_id = c.author_id._id.toString();
+      } else {
+        courseObj.authorName = 'Невідомий автор';
+        courseObj.authorAvatar = '';
+      }
+      
+      return courseObj;
+    });
+
+    res.json(coursesWithAuthors);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

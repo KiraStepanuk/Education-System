@@ -7,10 +7,7 @@ const userSchema = new mongoose.Schema({
   firstName: { type: String, required: true },
   lastName: { type: String, required: true },
 
-  avatar: {
-    type: String,
-    default: 'https://via.placeholder.com/150'
-  },
+  avatar: { type: String, default: '' },
 
   favorites: [{
     type: mongoose.Schema.Types.ObjectId,

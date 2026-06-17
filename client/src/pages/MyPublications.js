@@ -57,6 +57,7 @@ const MyPublications = ({ user }) => {
 
   const activeCourses = courses.filter(c => c.status !== 'rejected');
   const rejectedCourses = courses.filter(c => c.status === 'rejected');
+  const totalViews = courses.reduce((sum, course) => sum + (course.views || 0), 0);
 
   return (
     <div className="publications-page">
@@ -81,7 +82,7 @@ const MyPublications = ({ user }) => {
         </div>
         <div className="pub-stat-card">
           <label>Перегляди</label>
-          <div className="value">1,248</div>
+          <div className="value">{totalViews.toLocaleString()}</div>
         </div>
         <div className="pub-stat-card">
           <label>Середній рейтинг</label>
