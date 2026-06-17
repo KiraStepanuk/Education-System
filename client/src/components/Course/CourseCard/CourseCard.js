@@ -14,6 +14,11 @@ const CourseCard = ({ course, variant, onApprove, onReject }) => {
         }
     };
 
+    // Отримуємо реальні дані про автора (якщо бекенд зробив populate)
+    const authorName = typeof course.author_id === 'object' && course.author_id?.firstName
+        ? `${course.author_id.firstName} ${course.author_id.lastName}`
+        : `Автор #${typeof course.author_id === 'object' ? (course.author_id?.id || course.author_id?._id) : course.author_id}`;
+
     return (
         <div className="course-card-modern">
             <img
@@ -22,14 +27,29 @@ const CourseCard = ({ course, variant, onApprove, onReject }) => {
                 className="cc-image"
                 onClick={handleNavigate}
             />
-            
+
             <div className="cc-body" onClick={handleNavigate}>
                 <h3 className="cc-title">{course.title}</h3>
+
+                {/* Динамічний рейтинг з перевіркою на нуль */}
                 <div className="cc-rating">
-                    ★ 4.9 <span>(128 відгуків)</span>
+                    ★ {course.reviews > 0 ? course.rating : '0.0'}
+                    <span>({course.reviews ?? 0} відгуків)</span>
                 </div>
 
                 <div className="cc-footer">
+<<<<<<< Tovaliuk
+                    {/* Якщо є аватарка, показуємо її, інакше - пустий div */}
+                    {typeof course.author_id === 'object' && course.author_id?.avatar ? (
+                        <img src={course.author_id.avatar} alt="Author" className="cc-author-avatar" style={{width: '24px', height: '24px', borderRadius: '50%'}} />
+                    ) : (
+                        <div className="cc-author-avatar"></div>
+                    )}
+                    <span className="cc-author-name">
+                        {authorName}
+                    </span>
+                </div>
+=======
     {course.authorAvatar ? (
         <img 
             src={course.authorAvatar} 
@@ -47,6 +67,7 @@ const CourseCard = ({ course, variant, onApprove, onReject }) => {
             : course.author_id}`}
     </span>
 </div>
+>>>>>>> main
             </div>
 
             {variant === 'moderation' && (
@@ -55,8 +76,8 @@ const CourseCard = ({ course, variant, onApprove, onReject }) => {
                     <Button text="Відхилити" variant="danger" onClick={() => onReject(course.id)} />
                 </div>
             )}
-            
-             {variant === 'editable' && (
+
+            {variant === 'editable' && (
                 <div className="cc-actions">
                     <Button text="Редагувати" variant="outline" onClick={handleNavigate} />
                 </div>
