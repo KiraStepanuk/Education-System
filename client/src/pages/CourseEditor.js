@@ -1,10 +1,21 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Footer from '../components/Layout/Footer/Footer';
-import SectionHeading from '../components/UI/SectionHeading/SectionHeading';
-import Button from '../components/UI/Button/Button';
 import { API_URL } from '../config';
 import './CourseEditor.css';
+
+const CATEGORIES = [
+  "IT та Програмування",
+  "Дизайн та UX/UI",
+  "Бізнес та Менеджмент",
+  "Маркетинг",
+  "Фізико-математичні науки",
+  "Вивчення мов",
+  "Психологія",
+  "Мистецтво та Гуманітарні науки",
+  "Здоров'я та Фітнес",
+  "Особистий розвиток"
+];
 
 const CourseEditor = ({ user }) => {
   const { id } = useParams();
@@ -13,16 +24,11 @@ const CourseEditor = ({ user }) => {
   const fileInputRef = useRef(null);
 
   const [title, setTitle] = useState('');
+  const [category, setCategory] = useState(CATEGORIES[0]);
   const [content, setContent] = useState('');
   const [rejectReason, setRejectReason] = useState('');
   const [image, setImage] = useState('');
   const [loading, setLoading] = useState(isEditMode);
-
-  let userRoleText = 'Гість';
-  if (user) {
-    if (user.role === 'admin') userRoleText = 'Адмін';
-    else if (user.role === 'user') userRoleText = 'Користувач';
-  }
 
   useEffect(() => {
     if (isEditMode) {
@@ -30,6 +36,7 @@ const CourseEditor = ({ user }) => {
         .then((res) => res.json())
         .then((data) => {
           setTitle(data.title || '');
+          setCategory(data.category || CATEGORIES[0]);
           setContent(data.content || '');
           setRejectReason(data.reject_reason || '');
           setImage(data.image || '');
@@ -69,6 +76,7 @@ const CourseEditor = ({ user }) => {
 
     const courseData = {
       title,
+      category,
       content,
       image: image || '',
       author_id: user.id,
@@ -97,32 +105,31 @@ const CourseEditor = ({ user }) => {
     }
   };
 
-  if (loading) {
-    return <div className="editor-loading">Завантаження...</div>;
-  }
+  if (loading) return <div className="editor-loading">Завантаження...</div>;
 
   return (
     <div className="editor-page">
-
       <main className="editor-container">
+        
         <div className="editor-header-row">
-          <button className="back-circle-btn" onClick={() => navigate(-1)}>
-            ←
+          <button className="back-circle-btn modern" onClick={() => navigate(-1)} type="button">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
           </button>
-          <SectionHeading text={isEditMode ? 'Редагування курсу' : 'Створення курсу'} />
+          <h1 className="preview-course-title">
+            {isEditMode ? 'Редагування курсу' : 'Створення нового курсу'}
+          </h1>
         </div>
 
-        <form onSubmit={handleSubmit} className="editor-form">
-          <div className="editor-top-section">
-            
+        <form onSubmit={handleSubmit} className="editor-form-card">
+          
+          <div className="editor-top-grid">
             <div className="course-image-preview-box" onClick={triggerFileSelect}>
               {image ? (
-                <>
-                  <img src={image} alt="Preview" className="editor-preview-img" />
-                </>
+                <img src={image} alt="Preview" className="editor-preview-img" />
               ) : (
                 <div className="empty-image-placeholder">
-                  <span>Зображення</span>
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{marginBottom: '8px'}}><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                  <br />Завантажити обкладинку
                 </div>
               )}
             </div>
@@ -135,29 +142,49 @@ const CourseEditor = ({ user }) => {
               onChange={handleImageChange}
             />
             
-            <div className="course-title-input-container">
-              <input
-                type="text"
-                className="course-title-input"
-                placeholder="Введіть назву курсу..."
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                required
-              />
+            <div className="editor-inputs">
+              <div className="input-group">
+                <label>Назва курсу</label>
+                <input
+                  type="text"
+                  className="course-title-input"
+                  placeholder="Введіть назву, наприклад: Основи Python"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="input-group">
+                <label>Категорія</label>
+                <select 
+                  className="course-category-select"
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  required
+                >
+                  {CATEGORIES.map((cat, index) => (
+                    <option key={index} value={cat}>{cat}</option>
+                  ))}
+                </select>
+              </div>
             </div>
           </div>
 
           {isEditMode && rejectReason && (
             <div className="rejection-notice">
-              <p className="rejection-label">Причина відхилення від модератора:</p>
-              <p className="rejection-text">{rejectReason}</p>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+              <div className="rejection-text-content">
+                <p><strong>Відхилено модератором:</strong> {rejectReason}</p>
+              </div>
             </div>
           )}
 
-          <div className="editor-content-section">
+          <div className="input-group">
+            <label>Текст курсу (зміст)</label>
             <textarea
               className="course-content-textarea"
-              placeholder="Склад курсу..."
+              placeholder="Розпишіть детальну інформацію про ваш курс..."
               value={content}
               onChange={(e) => setContent(e.target.value)}
               required
@@ -165,12 +192,11 @@ const CourseEditor = ({ user }) => {
           </div>
 
           <div className="editor-actions">
-            <Button 
-              text="Відправити на перевірку" 
-              variant="red" 
-              type="submit" 
-            />
+            <button type="submit" className="btn-submit-course">
+              Відправити на перевірку
+            </button>
           </div>
+
         </form>
       </main>
 
