@@ -149,9 +149,6 @@ app.get('/users/:id', async (req, res) => {
 app.get('/courses', async (req, res) => {
   const { status, sort } = req.query;
 
-  console.log("SORT:", sort);
-  console.log("SORT RAW:", JSON.stringify(sort));
-
   let filter = {};
   if (status) filter.status = status;
 
