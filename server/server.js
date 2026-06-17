@@ -23,7 +23,7 @@ mongoose.connect(mongoURI)
   .then(() => console.log('Успішно підключено до MongoDB Atlas'))
   .catch(err => console.error('Помилка підключення до MongoDB:', err));
 
-// Middleware для перевірки ролей адміністратора
+
 async function checkRole(role) {
   return async (req, res, next) => {
     const userId = req.headers['user_id'];
@@ -42,7 +42,6 @@ async function checkRole(role) {
   };
 }
 
-// --- АВТОРИЗАЦІЯ ЧЕРЕЗ GOOGLE ---
 app.post('/auth/google', async (req, res) => {
   const { profile } = req.body;
 
@@ -54,16 +53,15 @@ app.post('/auth/google', async (req, res) => {
     const userEmail = profile.email;
     let user = await User.findOne({ username: userEmail });
 
-    // Якщо користувача з такою поштою немає, створюємо новий аккаунт
     if (!user) {
       const dummyPassword = Math.random().toString(36).slice(-10) + 'Gg1!';
       
       const newUser = new User({
         username: userEmail,
-        password: dummyPassword, // Тимчасовий пароль для валідації схеми
+        password: dummyPassword,
         firstName: profile.given_name || 'User',
         lastName: profile.family_name || 'Google',
-        role: 'user' // Роль за замовчуванням
+        role: 'user'
       });
 
       user = await newUser.save();
@@ -77,19 +75,17 @@ app.post('/auth/google', async (req, res) => {
   }
 });
 
-// --- СТАНДАРТНА АВТОРИЗАЦІЯ ---
 
 app.post('/register', async (req, res) => {
   const { username, password, firstName, lastName, role } = req.body;
 
   try {
-    // 1. Перевіряємо, чи немає вже такого користувача
+
     const existingUser = await User.findOne({ username });
     if (existingUser) {
       return res.status(400).json({ error: "Користувач з таким логіном вже існує" });
     }
 
-    // 2. Створюємо та зберігаємо нового користувача в БД
     const newUser = new User({
       username,
       password,
@@ -100,7 +96,6 @@ app.post('/register', async (req, res) => {
 
     const savedUser = await newUser.save();
 
-    // 3. Повертаємо об'єкт створеного користувача (без пароля)
     res.json({
       success: true,
       user: {
@@ -131,8 +126,6 @@ app.post('/login', async (req, res) => {
   }
 });
 
-// --- РОУТИ ДЛЯ КОРИСТУВАЧІВ ---
-
 app.get('/users', async (req, res) => {
   try {
     const users = await User.find({}, 'username role firstName lastName');
@@ -152,7 +145,6 @@ app.get('/users/:id', async (req, res) => {
   }
 });
 
-// --- РОУТИ ДЛЯ КУРСІВ ---
 
 app.get('/courses', async (req, res) => {
   const { author_id, status } = req.query;
@@ -215,12 +207,12 @@ app.get('/courses/:id', async (req, res) => {
 });
 
 app.put('/courses/:id', async (req, res) => {
-  const { title, content, image } = req.body;
+  const { title, content, image, category } = req.body;
 
   try {
     const updatedCourse = await Course.findByIdAndUpdate(
         req.params.id,
-        { title, content, image, status: 'pending', reject_reason: '' },
+        { title, content, image, category, status: 'pending', reject_reason: '' },
         { returnDocument: 'after' }
     );
 
@@ -232,7 +224,6 @@ app.put('/courses/:id', async (req, res) => {
   }
 });
 
-// --- ЗМІНА ПАРОЛЯ ---
 app.put('/users/:id/password', async (req, res) => {
   const { currentPassword, newPassword } = req.body;
 
@@ -273,7 +264,6 @@ app.delete('/courses/:id', async (req, res) => {
   }
 });
 
-// --- ОНОВЛЕННЯ ДАНИХ КОРИСТУВАЧА ---
 app.put('/users/:id', async (req, res) => {
   const { firstName, lastName, avatar } = req.body;
 
@@ -281,7 +271,7 @@ app.put('/users/:id', async (req, res) => {
     const updatedUser = await User.findByIdAndUpdate(
         req.params.id,
         { firstName, lastName, avatar },
-        { returnDocument: 'after', select: '-password' } // Повертаємо оновленого юзера без пароля
+        { returnDocument: 'after', select: '-password' }
     );
 
     if (!updatedUser) return res.status(404).json({ error: "Користувача не знайдено" });
@@ -291,8 +281,6 @@ app.put('/users/:id', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-
-// --- РОУТИ МОДЕРАЦІЇ ---
 
 app.put('/courses/:id/approve', async (req, res) => {
   try {
