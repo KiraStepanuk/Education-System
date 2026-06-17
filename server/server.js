@@ -146,6 +146,7 @@ app.get('/users/:id', async (req, res) => {
   }
 });
 
+<<<<<<< Tovaliuk
 app.put('/users/:id/password', async (req, res) => {
   const { currentPassword, newPassword } = req.body;
 
@@ -188,17 +189,67 @@ app.put('/users/:id', async (req, res) => {
 // Courses
 // ==========================================
 
+=======
+>>>>>>> main
 app.get('/courses', async (req, res) => {
-  const { author_id, status } = req.query;
-  const filter = {};
+  const { status, sort } = req.query;
 
-  if (author_id) filter.author_id = author_id;
+  let filter = {};
   if (status) filter.status = status;
 
+  let sortOption = {};
+
+  switch (sort) {
+    case 'new':
+      sortOption = { createdAt: -1 };
+      break;
+
+    case 'old':
+      sortOption = { createdAt: 1 };
+      break;
+
+    case 'views':
+      sortOption = { views: -1 };
+      break;
+
+    case 'rating':
+      sortOption = { averageRating: -1 };
+      break;
+
+    default:
+      sortOption = { createdAt: -1 };
+  }
+
   try {
+
     const courses = await Course.find(filter)
+<<<<<<< Tovaliuk
         .populate('author_id', 'firstName lastName avatar');
     res.json(courses);
+=======
+      .populate('author_id', 'firstName lastName avatar')
+      .sort(sortOption);
+
+
+    const coursesWithAuthors = courses.map(c => {
+      const courseObj = c.toJSON();
+      
+      if (c.author_id) {
+        courseObj.authorName = `${c.author_id.firstName} ${c.author_id.lastName}`;
+        courseObj.authorAvatar = c.author_id.avatar || '';
+        
+
+        courseObj.author_id = c.author_id._id.toString();
+      } else {
+        courseObj.authorName = 'Невідомий автор';
+        courseObj.authorAvatar = '';
+      }
+      
+      return courseObj;
+    });
+
+    res.json(coursesWithAuthors);
+>>>>>>> main
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -266,6 +317,29 @@ app.put('/courses/:id', async (req, res) => {
   }
 });
 
+<<<<<<< Tovaliuk
+=======
+app.put('/users/:id/password', async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ error: "Користувача не знайдено" });
+
+    if (user.password !== currentPassword) {
+      return res.status(400).json({ error: "Невірний поточний пароль" });
+    }
+
+    user.password = newPassword;
+    await user.save();
+
+    res.json({ success: true, message: "Пароль успішно змінено" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+>>>>>>> main
 app.delete('/courses/:id', async (req, res) => {
   const userId = req.headers['user_id'];
 

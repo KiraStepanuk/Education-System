@@ -38,6 +38,7 @@ const CourseCard = ({ course, variant, onApprove, onReject }) => {
                 </div>
 
                 <div className="cc-footer">
+<<<<<<< Tovaliuk
                     {/* Якщо є аватарка, показуємо її, інакше - пустий div */}
                     {typeof course.author_id === 'object' && course.author_id?.avatar ? (
                         <img src={course.author_id.avatar} alt="Author" className="cc-author-avatar" style={{width: '24px', height: '24px', borderRadius: '50%'}} />
@@ -48,6 +49,25 @@ const CourseCard = ({ course, variant, onApprove, onReject }) => {
                         {authorName}
                     </span>
                 </div>
+=======
+    {course.authorAvatar ? (
+        <img 
+            src={course.authorAvatar} 
+            alt={course.authorName || 'Автор'} 
+            className="cc-author-avatar" 
+            style={{ objectFit: 'cover' }} 
+        />
+    ) : (
+        <div className="cc-author-avatar"></div>
+    )}
+
+    <span className="cc-author-name">
+        {course.authorName || `Автор #${typeof course.author_id === 'object' 
+            ? (course.author_id?.id || course.author_id?._id) 
+            : course.author_id}`}
+    </span>
+</div>
+>>>>>>> main
             </div>
 
             {variant === 'moderation' && (
