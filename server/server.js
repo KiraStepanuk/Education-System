@@ -146,7 +146,6 @@ app.get('/users/:id', async (req, res) => {
   }
 });
 
-<<<<<<< Tovaliuk
 app.put('/users/:id/password', async (req, res) => {
   const { currentPassword, newPassword } = req.body;
 
@@ -189,8 +188,6 @@ app.put('/users/:id', async (req, res) => {
 // Courses
 // ==========================================
 
-=======
->>>>>>> main
 app.get('/courses', async (req, res) => {
   const { status, sort } = req.query;
 
@@ -221,15 +218,9 @@ app.get('/courses', async (req, res) => {
   }
 
   try {
-
     const courses = await Course.find(filter)
-<<<<<<< Tovaliuk
-        .populate('author_id', 'firstName lastName avatar');
-    res.json(courses);
-=======
       .populate('author_id', 'firstName lastName avatar')
       .sort(sortOption);
-
 
     const coursesWithAuthors = courses.map(c => {
       const courseObj = c.toJSON();
@@ -237,8 +228,6 @@ app.get('/courses', async (req, res) => {
       if (c.author_id) {
         courseObj.authorName = `${c.author_id.firstName} ${c.author_id.lastName}`;
         courseObj.authorAvatar = c.author_id.avatar || '';
-        
-
         courseObj.author_id = c.author_id._id.toString();
       } else {
         courseObj.authorName = 'Невідомий автор';
@@ -249,7 +238,6 @@ app.get('/courses', async (req, res) => {
     });
 
     res.json(coursesWithAuthors);
->>>>>>> main
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -317,29 +305,6 @@ app.put('/courses/:id', async (req, res) => {
   }
 });
 
-<<<<<<< Tovaliuk
-=======
-app.put('/users/:id/password', async (req, res) => {
-  const { currentPassword, newPassword } = req.body;
-
-  try {
-    const user = await User.findById(req.params.id);
-    if (!user) return res.status(404).json({ error: "Користувача не знайдено" });
-
-    if (user.password !== currentPassword) {
-      return res.status(400).json({ error: "Невірний поточний пароль" });
-    }
-
-    user.password = newPassword;
-    await user.save();
-
-    res.json({ success: true, message: "Пароль успішно змінено" });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
->>>>>>> main
 app.delete('/courses/:id', async (req, res) => {
   const userId = req.headers['user_id'];
 
@@ -392,7 +357,6 @@ app.put('/courses/:id/reject', async (req, res) => {
 
 app.get('/courses/:id/comments', async (req, res) => {
   try {
-    // ВАЖЛИВО: Додано фільтр, щоб відсікати порожні коментарі
     const comments = await Review.find({
       course_id: req.params.id,
       comment: { $exists: true, $ne: "" }
@@ -457,7 +421,6 @@ app.post('/courses/:id/comments', async (req, res) => {
   }
 });
 
-// НОВИЙ ЕНДПОІНТ ДЛЯ РЕЙТИНГУ
 app.post('/courses/:id/rate', async (req, res) => {
   const { rating } = req.body;
   const userId = req.headers['user_id'];
@@ -472,15 +435,12 @@ app.post('/courses/:id/rate', async (req, res) => {
   }
 
   try {
-    // Шукаємо, чи залишав користувач вже відгук/оцінку
     let review = await Review.findOne({ course_id: courseId, user_id: userId });
 
     if (review) {
-      // Якщо відгук є, просто оновлюємо оцінку
       review.rating = rating;
       await review.save();
     } else {
-      // Якщо немає, створюємо новий запис з порожнім коментарем
       review = new Review({
         course_id: courseId,
         user_id: userId,
@@ -490,18 +450,14 @@ app.post('/courses/:id/rate', async (req, res) => {
       await review.save();
     }
 
-    // Перераховуємо середній рейтинг курсу
     const allReviews = await Review.find({ course_id: courseId });
-    // Відкидаємо відгуки без оцінок (якщо такі можливі у вашій базі)
     const ratedReviews = allReviews.filter(r => r.rating && r.rating > 0);
 
     const totalRating = ratedReviews.reduce((sum, r) => sum + r.rating, 0);
     const newReviewsCount = ratedReviews.length;
 
-    // Округлюємо до одного десяткового знаку
     const newAverageRating = newReviewsCount > 0 ? (totalRating / newReviewsCount).toFixed(1) : 0;
 
-    // Оновлюємо дані в моделі Course (переконайтеся, що у CourseSchema є поля rating і reviews)
     const updatedCourse = await Course.findByIdAndUpdate(
         courseId,
         {
@@ -511,7 +467,6 @@ app.post('/courses/:id/rate', async (req, res) => {
         { returnDocument: 'after' }
     );
 
-    // Повертаємо оновлені дані на фронтенд
     res.json({
       success: true,
       newAverageRating: updatedCourse.rating,
