@@ -25,7 +25,6 @@ const userSchema = new mongoose.Schema({
   }
 });
 
-// Віртуальне поле 'id', щоб не ламати фронтенд, який очікує 'id' замість '_id'
 userSchema.virtual('id').get(function() {
   return this._id.toHexString();
 });
