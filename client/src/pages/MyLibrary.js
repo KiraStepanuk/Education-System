@@ -5,12 +5,21 @@ import './MyLibrary.css';
 
 const MyLibrary = ({ user }) => {
   const [courses, setCourses] = useState([]);
+  const [favorites, setFavorites] = useState([]);
 
   useEffect(() => {
     fetch(`${API_URL}/courses`)
       .then((res) => res.json())
       .then((data) => setCourses(data.filter(c => c.status === 'approved')));
   }, []);
+
+  useEffect(() => {
+    if (!user?._id && !user?.id) return;
+    const userId = user._id || user.id;
+    fetch(`${API_URL}/users/${userId}/favorites`)
+      .then((res) => res.json())
+      .then((data) => setFavorites(Array.isArray(data) ? data : []));
+  }, [user]);
 
   return (
     <div className="library-page">
@@ -86,9 +95,13 @@ const MyLibrary = ({ user }) => {
         <h2>Улюблені курси</h2>
       </div>
       <div className="courses-grid">
-        {courses.slice(0, 4).map(course => (
-          <CourseCard key={course.id} course={course} showHeart={true} metaInfo="₴1,200" category="Вибране" />
-        ))}
+        {favorites.length === 0 ? (
+          <p style={{ color: 'var(--text-muted)' }}>Ви ще не додали жодного курсу до улюблених.</p>
+        ) : (
+          favorites.map(course => (
+            <CourseCard key={course._id || course.id} course={course} />
+          ))
+        )}
       </div>
     </div>
   );
