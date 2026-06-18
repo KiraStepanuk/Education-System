@@ -477,4 +477,44 @@ app.post('/courses/:id/rate', async (req, res) => {
   }
 });
 
+app.post('/users/:id/favorites', async (req, res) => {
+  const { courseId } = req.body;
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ error: "Користувача не знайдено" });
+    const index = user.favorites.findIndex(fav => fav.toString() === courseId);
+    if (index === -1) {
+      user.favorites.push(courseId);
+    } else {
+      user.favorites.splice(index, 1);
+    }
+    await user.save();
+    res.json({ success: true, favorites: user.favorites });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/users/:id/favorites', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id).populate({
+      path: 'favorites',
+      populate: { path: 'author_id', select: 'firstName lastName avatar' }
+    });
+    if (!user) return res.status(404).json({ error: "Користувача не знайдено" });
+    const favorites = user.favorites.map(c => {
+      const courseObj = c.toJSON();
+      if (c.author_id) {
+        courseObj.authorName = `${c.author_id.firstName} ${c.author_id.lastName}`;
+        courseObj.authorAvatar = c.author_id.avatar || '';
+        courseObj.author_id = c.author_id._id.toString();
+      }
+      return courseObj;
+    });
+    res.json(favorites);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

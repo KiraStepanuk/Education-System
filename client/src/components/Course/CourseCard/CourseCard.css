@@ -78,3 +78,47 @@
   display: flex;
   gap: 8px;
 }
+
+.cc-image-wrapper {
+  position: relative;
+}
+
+.cc-category-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: rgba(15, 23, 42, 0.75);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 6px;
+  pointer-events: none;
+}
+
+.cc-heart-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(15, 23, 42, 0.45);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, transform 0.15s;
+}
+
+.cc-heart-btn:hover {
+  background: rgba(15, 23, 42, 0.7);
+  transform: scale(1.1);
+}
+
+.cc-heart-btn--active {
+  background: rgba(255, 255, 255, 0.9);
+}
