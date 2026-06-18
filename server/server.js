@@ -138,8 +138,15 @@ app.get('/users', async (req, res) => {
 
 app.get('/users/:id', async (req, res) => {
   try {
-    const user = await User.findById(req.params.id, 'username role firstName lastName bio');
-    if (!user) return res.status(404).json({ error: "Користувача не знайдено" });
+    const user = await User.findById(
+        req.params.id,
+        'username role firstName lastName bio avatar'
+    );
+
+    if (!user) {
+      return res.status(404).json({ error: "Користувача не знайдено" });
+    }
+
     res.json(user);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -473,6 +480,49 @@ app.post('/courses/:id/rate', async (req, res) => {
 
   } catch (err) {
     console.error('Помилка при збереженні рейтингу:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/users/:id/profile', async (req, res) => {
+  try {
+    const userId = req.params.id;
+
+    // Шукаємо користувача, повертаємо лише необхідні поля
+    const user = await User.findById(userId, 'firstName lastName avatar bio role');
+    if (!user) return res.status(404).json({ error: "Користувача не знайдено" });
+
+    // Шукаємо активні (схвалені) курси цього автора
+    const courses = await Course.find({ author_id: userId, status: 'approved' })
+        .select('title image category rating reviews createdAt')
+        .sort({ createdAt: -1 });
+
+    // Рахуємо загальний середній рейтинг усіх курсів автора
+    let totalRating = 0;
+    let totalReviews = 0;
+
+    courses.forEach(c => {
+      if (c.reviews > 0) {
+        totalRating += Number(c.rating) * c.reviews;
+        totalReviews += c.reviews;
+      }
+    });
+
+    const authorAverageRating = totalReviews > 0
+        ? (totalRating / totalReviews).toFixed(1)
+        : 0;
+
+    res.json({
+      success: true,
+      user,
+      courses,
+      stats: {
+        authorAverageRating,
+        totalCourses: courses.length,
+        totalReviews
+      }
+    });
+  } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });

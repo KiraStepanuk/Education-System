@@ -357,7 +357,12 @@ const CoursePreview = ({ user }) => {
                 </div>
                 <h3>{authorName}</h3>
                 <p>Автор</p>
-                <button className="view-profile-btn">View Profile</button>
+                <button
+                    className="view-profile-btn"
+                    onClick={() => navigate(`/profile/${course.author_id._id || course.author_id.id}`)}
+                >
+                  View Profile
+                </button>
               </div>
 
               <div className="share-card">
