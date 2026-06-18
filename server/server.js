@@ -138,7 +138,7 @@ app.get('/users', async (req, res) => {
 
 app.get('/users/:id', async (req, res) => {
   try {
-    const user = await User.findById(req.params.id, 'username role firstName lastName');
+    const user = await User.findById(req.params.id, 'username role firstName lastName bio');
     if (!user) return res.status(404).json({ error: "Користувача не знайдено" });
     res.json(user);
   } catch (err) {
@@ -166,13 +166,14 @@ app.put('/users/:id/password', async (req, res) => {
   }
 });
 
+// Додано підтримку поля bio
 app.put('/users/:id', async (req, res) => {
-  const { firstName, lastName, avatar } = req.body;
+  const { firstName, lastName, avatar, bio } = req.body;
 
   try {
     const updatedUser = await User.findByIdAndUpdate(
         req.params.id,
-        { firstName, lastName, avatar },
+        { firstName, lastName, avatar, bio },
         { returnDocument: 'after', select: '-password' }
     );
 
@@ -189,10 +190,11 @@ app.put('/users/:id', async (req, res) => {
 // ==========================================
 
 app.get('/courses', async (req, res) => {
-  const { status, sort } = req.query;
+  const { status, sort, author_id } = req.query;
 
   let filter = {};
   if (status) filter.status = status;
+  if (author_id) filter.author_id = author_id;
 
   let sortOption = {};
 
@@ -200,19 +202,15 @@ app.get('/courses', async (req, res) => {
     case 'new':
       sortOption = { createdAt: -1 };
       break;
-
     case 'old':
       sortOption = { createdAt: 1 };
       break;
-
     case 'views':
       sortOption = { views: -1 };
       break;
-
     case 'rating':
       sortOption = { averageRating: -1 };
       break;
-
     default:
       sortOption = { createdAt: -1 };
   }
