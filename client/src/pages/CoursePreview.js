@@ -86,7 +86,6 @@ const CoursePreview = ({ user }) => {
     }
   };
 
-  // Функція для відправки нового коментаря
   const handlePostComment = async () => {
     if (!newComment.trim() || !user) return;
 
@@ -103,9 +102,8 @@ const CoursePreview = ({ user }) => {
 
       if (response.ok) {
         const addedComment = await response.json();
-        // Додаємо новий коментар на початок списку
         setComments([addedComment, ...comments]);
-        setNewComment(''); // Очищаємо поле вводу
+        setNewComment('');
       } else {
         console.error('Не вдалося додати коментар');
       }
@@ -116,7 +114,6 @@ const CoursePreview = ({ user }) => {
     }
   };
 
-  // Функція для відправки рейтингу
   const handleRate = async (ratingValue) => {
     if (!user) {
       setRatingMessage('Будь ласка, увійдіть, щоб оцінити курс.');
@@ -136,7 +133,6 @@ const CoursePreview = ({ user }) => {
 
       if (response.ok) {
         const data = await response.json();
-        // Оновлюємо загальний рейтинг курсу даними з бекенду
         setCourse(prev => ({
           ...prev,
           rating: data.newAverageRating || prev.rating,
@@ -154,8 +150,24 @@ const CoursePreview = ({ user }) => {
       setIsSubmittingRating(false);
     }
   };
+  
+  // Функція для кнопки Share
+  const handleShare = () => {
+    const currentUrl = window.location.href;
+    
+    if (navigator.share) {
+      navigator.share({
+        title: course?.title,
+        text: 'Зверніть увагу на цей крутий курс!',
+        url: currentUrl
+      }).catch(err => console.error('Помилка при спробі поділитися:', err));
+    } else {
+      navigator.clipboard.writeText(currentUrl)
+        .then(() => alert('Посилання на курс скопійовано у буфер обміну!'))
+        .catch(err => console.error('Не вдалося скопіювати посилання:', err));
+    }
+  };
 
-  // Допоміжна функція для рендеру зірочок загального рейтингу
   const renderStaticStars = (rating) => {
     const validRating = Number(rating) || 0;
     return Array.from({ length: 5 }).map((_, index) => (
@@ -242,7 +254,6 @@ const CoursePreview = ({ user }) => {
               <div className="discussion-section">
                 <h3>Discussion ({comments.length})</h3>
 
-                {/* Рендеримо коментарі з бекенду */}
                 {comments.length > 0 ? (
                     comments.map((comment) => (
                         <div className="comment-card" key={comment.id || comment._id}>
@@ -268,7 +279,6 @@ const CoursePreview = ({ user }) => {
                     <p style={{ color: '#666', marginBottom: '20px' }}>Поки немає коментарів. Будьте першим!</p>
                 )}
 
-                {/* Форма додавання коментаря */}
                 {user ? (
                     <div className="add-comment-card">
                       <img src={user?.avatar || "https://via.placeholder.com/40"} alt="You" className="comment-avatar" style={{width: '40px', height: '40px'}} />
@@ -352,7 +362,10 @@ const CoursePreview = ({ user }) => {
 
               <div className="share-card">
                 <span>Share course:</span>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                <svg onClick={handleShare} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{cursor: 'pointer'}}>
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
               </div>
 
             </div>

@@ -17,7 +17,7 @@ const Dashboard = ({ user, setUser }) => {
 
   // Модалка профілю
   const [showProfileModal, setShowProfileModal] = useState(false);
-  const [profileData, setProfileData] = useState({ firstName: '', lastName: '' });
+  const [profileData, setProfileData] = useState({ firstName: '', lastName: '', bio: '' });
 
   useEffect(() => {
     if (user && user.id) {
@@ -54,13 +54,12 @@ const Dashboard = ({ user, setUser }) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    // Захист від занадто великих файлів (макс. 2 МБ)
     if (file.size > 2 * 1024 * 1024) {
       return alert("Файл занадто великий! Будь ласка, виберіть фото розміром до 2 МБ.");
     }
 
     const reader = new FileReader();
-    reader.readAsDataURL(file); // Перетворюємо файл у Base64-рядок
+    reader.readAsDataURL(file);
 
     reader.onloadend = async () => {
       const base64Image = reader.result;
@@ -73,13 +72,13 @@ const Dashboard = ({ user, setUser }) => {
           body: JSON.stringify({
             firstName: user.firstName,
             lastName: user.lastName,
+            bio: user.bio,
             avatar: base64Image
           })
         });
 
         const data = await response.json();
         if (response.ok && data.success) {
-          // Оновлюємо фото на екрані без перезавантаження
           setUser({ ...user, avatar: data.user.avatar });
           localStorage.setItem('user', JSON.stringify({ ...user, avatar: data.user.avatar }));
         } else {
@@ -94,7 +93,7 @@ const Dashboard = ({ user, setUser }) => {
 
   // --- ЛОГІКА РЕДАГУВАННЯ ПРОФІЛЮ ---
   const openProfileModal = () => {
-    setProfileData({ firstName: user.firstName, lastName: user.lastName });
+    setProfileData({ firstName: user.firstName, lastName: user.lastName, bio: user.bio || '' });
     setShowProfileModal(true);
   };
 
@@ -108,13 +107,14 @@ const Dashboard = ({ user, setUser }) => {
       const response = await fetch(`${API_URL}/users/${targetId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ firstName: profileData.firstName, lastName: profileData.lastName })
+        body: JSON.stringify({ firstName: profileData.firstName, lastName: profileData.lastName, bio: profileData.bio })
       });
 
       const data = await response.json();
       if (response.ok && data.success) {
-        setUser({ ...user, firstName: data.user.firstName, lastName: data.user.lastName });
-        localStorage.setItem('user', JSON.stringify({ ...user, firstName: data.user.firstName, lastName: data.user.lastName }));
+        const updatedUser = { ...user, firstName: data.user.firstName, lastName: data.user.lastName, bio: data.user.bio };
+        setUser(updatedUser);
+        localStorage.setItem('user', JSON.stringify(updatedUser));
         setShowProfileModal(false);
       } else {
         alert(`Помилка: ${data.error}`);
@@ -193,7 +193,6 @@ const Dashboard = ({ user, setUser }) => {
                 onChange={handleAvatarChange}
             />
 
-            {/* Клік по кнопці */}
             <Button text="Змінити фото" style={{width: '100%'}} onClick={() => fileInputRef.current.click()} />
           </div>
 
@@ -230,6 +229,14 @@ const Dashboard = ({ user, setUser }) => {
                     >
                     Змінити
                   </span>
+                  </p>
+                </div>
+                
+                {/* БЛОК БІОГРАФІЇ (На всю ширину завдяки gridColumn: '1 / -1') */}
+                <div className="info-field" style={{ gridColumn: '1 / -1', borderBottom: 'none', paddingTop: '10px' }}>
+                  <label>Біографія</label>
+                  <p style={{ lineHeight: '1.6', whiteSpace: 'pre-wrap', fontWeight: '400', fontSize: '14px', margin: '8px 0 0 0', display: 'block' }}>
+                    {user.bio || 'Інформація відсутня. Розкажіть щось про себе!'}
                   </p>
                 </div>
               </div>
@@ -279,11 +286,20 @@ const Dashboard = ({ user, setUser }) => {
                         onChange={(e) => setProfileData({...profileData, lastName: e.target.value})}
                     />
                   </div>
+                  <div className="modal-field">
+                    <label>Біографія</label>
+                    <textarea
+                        style={{ width: '100%', padding: '10px 12px', border: '1px solid var(--border-color)', borderRadius: '8px', fontSize: '14px', fontFamily: 'inherit', resize: 'vertical', minHeight: '80px', boxSizing: 'border-box' }}
+                        value={profileData.bio}
+                        onChange={(e) => setProfileData({...profileData, bio: e.target.value})}
+                        placeholder="Розкажіть трохи про себе та ваш досвід..."
+                    />
+                  </div>
 
                   <div className="modal-actions">
-                <span className="modal-cancel" onClick={() => setShowProfileModal(false)}>
-                  Скасувати
-                </span>
+                    <span className="modal-cancel" onClick={() => setShowProfileModal(false)}>
+                      Скасувати
+                    </span>
                     <Button text="Зберегти" type="submit" />
                   </div>
                 </form>
@@ -328,17 +344,16 @@ const Dashboard = ({ user, setUser }) => {
                   </div>
 
                   <div className="modal-actions">
-                <span className="modal-cancel" onClick={() => {
-                  setShowPasswordModal(false);
-                  setPasswordError('');
-                }}>Скасувати</span>
+                    <span className="modal-cancel" onClick={() => {
+                      setShowPasswordModal(false);
+                      setPasswordError('');
+                    }}>Скасувати</span>
                     <Button text="Зберегти" type="submit" />
                   </div>
                 </form>
               </div>
             </div>
         )}
-
       </div>
   );
 };
