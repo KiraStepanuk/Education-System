@@ -20,8 +20,8 @@ app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
 const mongoURI = process.env.MONGODB_URI;
 
 mongoose.connect(mongoURI)
-    .then(() => console.log('Успішно підключено до MongoDB Atlas'))
-    .catch(err => console.error('Помилка підключення до MongoDB:', err));
+  .then(() => console.log('Успішно підключено до MongoDB Atlas'))
+  .catch(err => console.error('Помилка підключення до MongoDB:', err));
 
 async function checkRole(role) {
   return async (req, res, next) => {
@@ -41,9 +41,7 @@ async function checkRole(role) {
   };
 }
 
-// ==========================================
-// Auth & Users
-// ==========================================
+
 
 app.post('/auth/google', async (req, res) => {
   const { profile } = req.body;
@@ -71,7 +69,6 @@ app.post('/auth/google', async (req, res) => {
     }
 
     res.json({ success: true, user });
-
   } catch (error) {
     console.error("Помилка під час авторизації через Google:", error);
     res.status(500).json({ success: false, message: "Помилка сервера при авторизації" });
@@ -138,8 +135,12 @@ app.get('/users', async (req, res) => {
 
 app.get('/users/:id', async (req, res) => {
   try {
-    const user = await User.findById(req.params.id, 'username role firstName lastName bio');
-    if (!user) return res.status(404).json({ error: "Користувача не знайдено" });
+    const user = await User.findById(req.params.id, 'username role firstName lastName bio avatar');
+
+    if (!user) {
+      return res.status(404).json({ error: "Користувача не знайдено" });
+    }
+
     res.json(user);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -166,15 +167,14 @@ app.put('/users/:id/password', async (req, res) => {
   }
 });
 
-// Додано підтримку поля bio
 app.put('/users/:id', async (req, res) => {
   const { firstName, lastName, avatar, bio } = req.body;
 
   try {
     const updatedUser = await User.findByIdAndUpdate(
-        req.params.id,
-        { firstName, lastName, avatar, bio },
-        { returnDocument: 'after', select: '-password' }
+      req.params.id,
+      { firstName, lastName, avatar, bio },
+      { returnDocument: 'after', select: '-password' }
     );
 
     if (!updatedUser) return res.status(404).json({ error: "Користувача не знайдено" });
@@ -185,9 +185,7 @@ app.put('/users/:id', async (req, res) => {
   }
 });
 
-// ==========================================
-// Courses
-// ==========================================
+
 
 app.get('/courses', async (req, res) => {
   const { status, sort, author_id } = req.query;
@@ -199,20 +197,11 @@ app.get('/courses', async (req, res) => {
   let sortOption = {};
 
   switch (sort) {
-    case 'new':
-      sortOption = { createdAt: -1 };
-      break;
-    case 'old':
-      sortOption = { createdAt: 1 };
-      break;
-    case 'views':
-      sortOption = { views: -1 };
-      break;
-    case 'rating':
-      sortOption = { averageRating: -1 };
-      break;
-    default:
-      sortOption = { createdAt: -1 };
+    case 'new': sortOption = { createdAt: -1 }; break;
+    case 'old': sortOption = { createdAt: 1 }; break;
+    case 'views': sortOption = { views: -1 }; break;
+    case 'rating': sortOption = { averageRating: -1 }; break;
+    default: sortOption = { createdAt: -1 };
   }
 
   try {
@@ -222,7 +211,7 @@ app.get('/courses', async (req, res) => {
 
     const coursesWithAuthors = courses.map(c => {
       const courseObj = c.toJSON();
-      
+
       if (c.author_id) {
         courseObj.authorName = `${c.author_id.firstName} ${c.author_id.lastName}`;
         courseObj.authorAvatar = c.author_id.avatar || '';
@@ -231,7 +220,7 @@ app.get('/courses', async (req, res) => {
         courseObj.authorName = 'Невідомий автор';
         courseObj.authorAvatar = '';
       }
-      
+
       return courseObj;
     });
 
@@ -242,25 +231,10 @@ app.get('/courses', async (req, res) => {
 });
 
 app.post('/courses', async (req, res) => {
-  const {
-    title,
-    content,
-    image,
-    author_id,
-    category,
-    tags
-  } = req.body;
+  const { title, content, image, author_id, category, tags } = req.body;
 
   try {
-    const newCourse = new Course({
-      title,
-      content,
-      image,
-      author_id,
-      category,
-      tags,
-      status: 'pending'
-    });
+    const newCourse = new Course({ title, content, image, author_id, category, tags, status: 'pending' });
 
     const savedCourse = await newCourse.save();
     res.json({ success: true, course_id: savedCourse._id });
@@ -272,7 +246,7 @@ app.post('/courses', async (req, res) => {
 app.get('/courses/:id', async (req, res) => {
   try {
     const course = await Course.findById(req.params.id)
-        .populate('author_id', 'firstName lastName avatar');
+      .populate('author_id', 'firstName lastName avatar');
 
     if (!course) return res.status(404).json({ error: "Курс не знайдено" });
 
@@ -290,9 +264,9 @@ app.put('/courses/:id', async (req, res) => {
 
   try {
     const updatedCourse = await Course.findByIdAndUpdate(
-        req.params.id,
-        { title, content, image, category, status: 'pending', reject_reason: '' },
-        { returnDocument: 'after' }
+      req.params.id,
+      { title, content, image, category, status: 'pending', reject_reason: '' },
+      { returnDocument: 'after' }
     );
 
     if (!updatedCourse) return res.status(404).json({ error: "Курс не знайдено" });
@@ -323,8 +297,11 @@ app.delete('/courses/:id', async (req, res) => {
 
 app.put('/courses/:id/approve', async (req, res) => {
   try {
-    const course = await Course.findByIdAndUpdate(req.params.id, { status: 'approved' },
-        { returnDocument: 'after', select: '-password' });
+    const course = await Course.findByIdAndUpdate(
+      req.params.id,
+      { status: 'approved' },
+      { returnDocument: 'after', select: '-password' }
+    );
     if (!course) return res.status(404).json({ error: "Курс не знайдено" });
     res.json({ success: true });
   } catch (err) {
@@ -337,8 +314,8 @@ app.put('/courses/:id/reject', async (req, res) => {
 
   try {
     const course = await Course.findByIdAndUpdate(
-        req.params.id,
-        { status: 'rejected', reject_reason }
+      req.params.id,
+      { status: 'rejected', reject_reason }
     );
 
     if (!course) return res.status(404).json({ error: "Курс не знайдено" });
@@ -349,18 +326,13 @@ app.put('/courses/:id/reject', async (req, res) => {
   }
 });
 
-// ==========================================
-// Comments & Ratings (Reviews)
-// ==========================================
+
 
 app.get('/courses/:id/comments', async (req, res) => {
   try {
-    const comments = await Review.find({
-      course_id: req.params.id,
-      comment: { $exists: true, $ne: "" }
-    })
-        .populate('user_id', 'firstName lastName avatar')
-        .sort({ createdAt: -1 });
+    const comments = await Review.find({ course_id: req.params.id, comment: { $exists: true, $ne: "" } })
+      .populate('user_id', 'firstName lastName avatar')
+      .sort({ createdAt: -1 });
 
     const formattedComments = comments.map(review => ({
       _id: review._id,
@@ -399,7 +371,6 @@ app.post('/courses/:id/comments', async (req, res) => {
     });
 
     const savedReview = await newReview.save();
-
     await savedReview.populate('user_id', 'firstName lastName avatar');
 
     const formattedComment = {
@@ -457,12 +428,12 @@ app.post('/courses/:id/rate', async (req, res) => {
     const newAverageRating = newReviewsCount > 0 ? (totalRating / newReviewsCount).toFixed(1) : 0;
 
     const updatedCourse = await Course.findByIdAndUpdate(
-        courseId,
-        {
-          rating: newAverageRating,
-          reviews: newReviewsCount
-        },
-        { returnDocument: 'after' }
+      courseId,
+      {
+        rating: newAverageRating,
+        reviews: newReviewsCount
+      },
+      { returnDocument: 'after' }
     );
 
     res.json({
@@ -470,24 +441,68 @@ app.post('/courses/:id/rate', async (req, res) => {
       newAverageRating: updatedCourse.rating,
       newReviewsCount: updatedCourse.reviews
     });
-
   } catch (err) {
     console.error('Помилка при збереженні рейтингу:', err);
     res.status(500).json({ error: err.message });
   }
 });
 
+
+
+app.get('/users/:id/profile', async (req, res) => {
+  try {
+    const userId = req.params.id;
+
+    const user = await User.findById(userId, 'firstName lastName avatar bio role');
+    if (!user) return res.status(404).json({ error: "Користувача не знайдено" });
+
+    const courses = await Course.find({ author_id: userId, status: 'approved' })
+      .select('title image category rating reviews createdAt')
+      .sort({ createdAt: -1 });
+
+    let totalRating = 0;
+    let totalReviews = 0;
+
+    courses.forEach(c => {
+      if (c.reviews > 0) {
+        totalRating += Number(c.rating) * c.reviews;
+        totalReviews += c.reviews;
+      }
+    });
+
+    const authorAverageRating = totalReviews > 0
+      ? (totalRating / totalReviews).toFixed(1)
+      : 0;
+
+    res.json({
+      success: true,
+      user,
+      courses,
+      stats: {
+        authorAverageRating,
+        totalCourses: courses.length,
+        totalReviews
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
 app.post('/users/:id/favorites', async (req, res) => {
   const { courseId } = req.body;
   try {
     const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ error: "Користувача не знайдено" });
+
     const index = user.favorites.findIndex(fav => fav.toString() === courseId);
     if (index === -1) {
       user.favorites.push(courseId);
     } else {
       user.favorites.splice(index, 1);
     }
+
     await user.save();
     res.json({ success: true, favorites: user.favorites });
   } catch (err) {
@@ -501,7 +516,9 @@ app.get('/users/:id/favorites', async (req, res) => {
       path: 'favorites',
       populate: { path: 'author_id', select: 'firstName lastName avatar' }
     });
+
     if (!user) return res.status(404).json({ error: "Користувача не знайдено" });
+
     const favorites = user.favorites.map(c => {
       const courseObj = c.toJSON();
       if (c.author_id) {
@@ -511,10 +528,12 @@ app.get('/users/:id/favorites', async (req, res) => {
       }
       return courseObj;
     });
+
     res.json(favorites);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
+
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

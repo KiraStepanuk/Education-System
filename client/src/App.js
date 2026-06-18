@@ -11,6 +11,7 @@ import MyLibrary from './pages/MyLibrary';
 import Sidebar from './components/Layout/Sidebar/Sidebar';
 import TopNav from './components/Layout/TopNav/TopNav';
 import MyPublications from './pages/MyPublications';
+import UserProfile from './pages/UserProfile';
 import './App.css';
 
 
@@ -41,6 +42,7 @@ function AppContent({ user, setUser }) {
                           <Route path="/create-course" element={<CourseEditor user={user} />} />
                           <Route path="/edit-course/:id" element={<CourseEditor user={user} />} />
                           <Route path="/publications" element={user ? <MyPublications user={user} /> : <Navigate to="/" />} />
+                          <Route path="/profile/:id" element={<UserProfile />} />
                       </Routes>
                 </div>
             </main>
