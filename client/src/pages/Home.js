@@ -58,7 +58,7 @@ const Home = ({ user }) => {
   return (
     <div className="home-page-content">
       <h1 className="home-header-title">
-        {user?.role === 'admin' ? "Панель модерації" : "Вітаємо в Open Learning Collective"}
+        {user?.role === 'admin' ? "Панель модерації" : "Вітаємо в Education-System"}
       </h1>
       <p className="home-subtitle">
         {user?.role === 'admin' ? "Перевірте курси, що очікують на публікацію" : "Твій простір для навчання та спільного розвитку."}
@@ -87,29 +87,29 @@ const Home = ({ user }) => {
       ) : (
         /* --- ВИГЛЯД ДЛЯ ЗВИЧАЙНОГО КОРИСТУВАЧА --- */
         <>
-          <div className="home-top-grid">
-            {/* Ліва колонка: Топ рейтингу */}
-            <div className="home-top-left">
-              <div className="section-header">
-                <h2><span style={{color: 'var(--primary-blue)'}}>★</span> Топ за рейтингом</h2>
-              </div>
-              <div className="courses-grid-horizontal">
-                {approvedCourses.slice(0, 2).map((course, idx) => (
-                  <CourseCard key={course.id} course={course} variant="compact" />
-                ))}
-              </div>
-            </div>
+          {/*<div className="home-top-grid">*/}
+          {/*  /!* Ліва колонка: Топ рейтингу *!/*/}
+          {/*  <div className="home-top-left">*/}
+          {/*    <div className="section-header">*/}
+          {/*      <h2><span style={{color: 'var(--primary-blue)'}}>★</span> Топ за рейтингом</h2>*/}
+          {/*    </div>*/}
+          {/*    <div className="courses-grid-horizontal">*/}
+          {/*      {approvedCourses.slice(0, 2).map((course, idx) => (*/}
+          {/*        <CourseCard key={course.id} course={course} variant="compact" />*/}
+          {/*      ))}*/}
+          {/*    </div>*/}
+          {/*  </div>*/}
 
-            {/* Права колонка: Топ Користувач */}
-            <div className="home-top-right">
-              <div className="section-header"><h2>Найкращий користувач</h2></div>
-              <div className="top-user-card">
-                 {/* ... вміст картки юзера ... */}
-                 <h3>Ігор Михайленко</h3>
-                 <button className="tu-btn">Переглянути профіль</button>
-              </div>
-            </div>
-          </div>
+          {/*  /!* Права колонка: Топ Користувач *!/*/}
+          {/*  <div className="home-top-right">*/}
+          {/*    <div className="section-header"><h2>Найкращий користувач</h2></div>*/}
+          {/*    <div className="top-user-card">*/}
+          {/*       /!* ... вміст картки юзера ... *!/*/}
+          {/*       <h3>Ігор Михайленко</h3>*/}
+          {/*       <button className="tu-btn">Переглянути профіль</button>*/}
+          {/*    </div>*/}
+          {/*  </div>*/}
+          {/*</div>*/}
 
           <section>
             <div className="section-header">

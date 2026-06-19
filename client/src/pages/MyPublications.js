@@ -10,33 +10,22 @@ const MyPublications = ({ user }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // const fetchMyCourses = async () => {
-    //   try {
-    //     const response = await fetch(`${API_URL}/courses?author_id=${user.id}`);
-    //     const data = await response.json();
-    //     setCourses(data);
-    //     setLoading(false);
-    //   } catch (error) {
-    //     console.error("Помилка завантаження публікацій", error);
-    //     setLoading(false);
-    //   }
-    // };
+    const fetchMyCourses = async () => {
+      try {
+        const response = await fetch(`${API_URL}/courses?author_id=${user.id}`);
+        const data = await response.json();
+        setCourses(data);
+        setLoading(false);
+      } catch (error) {
+        console.error("Помилка завантаження публікацій", error);
+        setLoading(false);
+      }
+    };
 
-    fetchMyCourses();
-
-  }, [user.id]);
-
-  const fetchMyCourses = async () => {
-    try {
-      const response = await fetch(`${API_URL}/courses?author_id=${user.id}`);
-      const data = await response.json();
-      setCourses(data);
-      setLoading(false);
-    } catch (error) {
-      console.error("Помилка завантаження публікацій", error);
-      setLoading(false);
+    if (user && user.id) {
+      fetchMyCourses();
     }
-  };
+  }, [user.id]);
 
   const handleDelete = async (id) => {
     if (!window.confirm("Ви впевнені, що хочете видалити цей курс?")) return;
@@ -57,6 +46,11 @@ const MyPublications = ({ user }) => {
 
   const activeCourses = courses.filter(c => c.status !== 'rejected');
   const rejectedCourses = courses.filter(c => c.status === 'rejected');
+  const totalViews = courses.reduce((sum, course) => sum + (course.views || 0), 0);
+  
+  // Розрахунок середнього рейтингу
+  const totalRating = courses.reduce((sum, course) => sum + (course.rating || 0), 0);
+  const averageRating = courses.length > 0 ? (totalRating / courses.length).toFixed(1) : '0.0';
 
   return (
     <div className="publications-page">
@@ -81,11 +75,11 @@ const MyPublications = ({ user }) => {
         </div>
         <div className="pub-stat-card">
           <label>Перегляди</label>
-          <div className="value">1,248</div>
+          <div className="value">{totalViews.toLocaleString()}</div>
         </div>
         <div className="pub-stat-card">
           <label>Середній рейтинг</label>
-          <div className="value">4.8 <span className="star">★</span></div>
+          <div className="value">{averageRating} <span className="star">★</span></div>
         </div>
       </div>
 

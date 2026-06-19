@@ -7,10 +7,7 @@ const userSchema = new mongoose.Schema({
   firstName: { type: String, required: true },
   lastName: { type: String, required: true },
 
-  avatar: {
-    type: String,
-    default: 'https://via.placeholder.com/150'
-  },
+  avatar: { type: String, default: '' },
 
   favorites: [{
     type: mongoose.Schema.Types.ObjectId,
@@ -28,7 +25,6 @@ const userSchema = new mongoose.Schema({
   }
 });
 
-// Віртуальне поле 'id', щоб не ламати фронтенд, який очікує 'id' замість '_id'
 userSchema.virtual('id').get(function() {
   return this._id.toHexString();
 });
