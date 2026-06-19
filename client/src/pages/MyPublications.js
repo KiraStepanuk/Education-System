@@ -7,6 +7,11 @@ import './MyPublications.css';
 const MyPublications = ({ user }) => {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
+  
+  // 1. Додані стани для пошуку та сортування
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortBy, setSortBy] = useState('new');
+  
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -44,7 +49,24 @@ const MyPublications = ({ user }) => {
 
   if (loading) return <div style={{ padding: '40px' }}>Завантаження...</div>;
 
-  const activeCourses = courses.filter(c => c.status !== 'rejected');
+  // 2. Фільтрація: беремо лише активні (не відхилені)
+  let activeCourses = courses.filter(c => c.status !== 'rejected');
+
+  // 3. Пошук за назвою
+  if (searchTerm) {
+    activeCourses = activeCourses.filter(c => 
+      c.title.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }
+
+  // 4. Сортування
+  activeCourses.sort((a, b) => {
+    if (sortBy === 'new') return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+    if (sortBy === 'old') return new Date(a.createdAt || 0) - new Date(b.createdAt || 0);
+    if (sortBy === 'views') return (b.views || 0) - (a.views || 0);
+    return 0;
+  });
+
   const rejectedCourses = courses.filter(c => c.status === 'rejected');
   const totalViews = courses.reduce((sum, course) => sum + (course.views || 0), 0);
   
@@ -88,14 +110,30 @@ const MyPublications = ({ user }) => {
         <div className="section-header-row">
           <h2>Мої курси</h2>
           <div className="table-controls">
+            
+            {/* Поле пошуку */}
             <div className="search-mini">
               <span style={{ position: 'absolute', left: '12px', top: '10px' }}>🔍</span>
-              <input type="text" placeholder="Пошук курсу..." />
+              <input 
+                type="text" 
+                placeholder="Пошук курсу..." 
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
             </div>
-            <button className="filter-btn-outline">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>
-              Фільтр
-            </button>
+            
+            {/* Випадаючий список сортування (замість кнопки Фільтр) */}
+            <select 
+              className="filter-btn-outline"
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              style={{ outline: 'none', cursor: 'pointer', appearance: 'auto' }}
+            >
+              <option value="new">Нові</option>
+              <option value="old">Старі</option>
+              <option value="views">За популярністю</option>
+            </select>
+
           </div>
         </div>
 
@@ -106,23 +144,32 @@ const MyPublications = ({ user }) => {
             <div>Дії</div>
           </div>
           {activeCourses.map(course => (
-            <div className="table-row" key={course.id}>
+            <div className="table-row" key={course.id || course._id}>
               <div className="course-info-cell">
                 <img src={course.image || "https://via.placeholder.com/50"} className="course-mini-img" alt="img" />
                 <div className="course-text-meta">
                   <h4>{course.title}</h4>
-                  <span>Дизайн • 24 лекції</span>
+                  <span>{course.category || 'Без категорії'}</span>
                 </div>
               </div>
-              <div className="date-cell">12 Жов 2023</div>
+              
+              {/* Відображення реальної дати створення */}
+              <div className="date-cell">
+                {course.createdAt ? new Date(course.createdAt).toLocaleDateString('uk-UA') : 'Невідомо'}
+              </div>
+              
               <div className="actions-cell">
-                <button className="btn-sm btn-view" onClick={() => navigate(`/courses/${course.id}`)}>Переглянути</button>
-                <button className="btn-sm btn-edit-sm" onClick={() => navigate(`/edit-course/${course.id}`)}>Редагувати</button>
-                <button className="btn-sm btn-delete-sm" onClick={() => handleDelete(course.id)}>Видалити</button>
+                <button className="btn-sm btn-view" onClick={() => navigate(`/courses/${course.id || course._id}`)}>Переглянути</button>
+                <button className="btn-sm btn-edit-sm" onClick={() => navigate(`/edit-course/${course.id || course._id}`)}>Редагувати</button>
+                <button className="btn-sm btn-delete-sm" onClick={() => handleDelete(course.id || course._id)}>Видалити</button>
               </div>
             </div>
           ))}
-          {activeCourses.length === 0 && <div style={{padding: '20px', textAlign: 'center', color: '#999'}}>У вас поки немає активних курсів.</div>}
+          {activeCourses.length === 0 && (
+            <div style={{padding: '20px', textAlign: 'center', color: '#999'}}>
+               {searchTerm ? 'За вашим запитом курсів не знайдено.' : 'У вас поки немає активних курсів.'}
+            </div>
+          )}
         </div>
       </section>
 
@@ -135,25 +182,27 @@ const MyPublications = ({ user }) => {
         
         <div style={{display:'flex', flexWrap:'wrap', gap:'20px'}}>
           {rejectedCourses.map(course => (
-            <div className="rejected-card" key={course.id}>
+            <div className="rejected-card" key={course.id || course._id}>
               <div className="rej-card-top">
                 <img src={course.image || "https://via.placeholder.com/60"} className="rej-img" alt="img" />
                 <div className="rej-info-header">
                   <span className="rej-status-tag">Повернено</span>
                   <h4>{course.title}</h4>
                   <p>Автор: {user.firstName} {user.lastName}</p>
-                  <p style={{fontSize:'11px', marginTop:'4px'}}>🕒 Сьогодні, 10:45</p>
+                  <p style={{fontSize:'11px', marginTop:'4px'}}>
+                    🕒 {course.updatedAt ? new Date(course.updatedAt).toLocaleDateString('uk-UA') : 'Сьогодні'}
+                  </p>
                 </div>
               </div>
               <p className="rej-desc">
                 {course.reject_reason || "Курс потребує перевірки на відповідність навчальній програмі та стандартам платформи."}
               </p>
               <div className="rej-actions">
-                <button className="rej-btn-edit" onClick={() => navigate(`/edit-course/${course.id}`)}>
+                <button className="rej-btn-edit" onClick={() => navigate(`/edit-course/${course.id || course._id}`)}>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
                   Редагувати
                 </button>
-                <button className="rej-btn-del" onClick={() => handleDelete(course.id)}>
+                <button className="rej-btn-del" onClick={() => handleDelete(course.id || course._id)}>
                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg>
                    Видалити
                 </button>

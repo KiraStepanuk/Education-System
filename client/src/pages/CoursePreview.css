@@ -157,6 +157,11 @@
   display: flex;
   align-items: center;
   gap: 12px;
+  transition: opacity 0.2s ease;
+}
+
+.comment-user:hover {
+  opacity: 0.7; 
 }
 
 .comment-avatar {

@@ -258,19 +258,25 @@ const CoursePreview = ({ user }) => {
                     comments.map((comment) => (
                         <div className="comment-card" key={comment.id || comment._id}>
                           <div className="comment-header">
-                            <div className="comment-user">
+                            {/* ДОДАНО ОБРОБНИК КЛІКУ ТА СТИЛІ */}
+                            <div 
+                               className="comment-user" 
+                               onClick={() => comment.author?.id && navigate(`/profile/${comment.author.id}`)}
+                               style={{ cursor: comment.author?.id ? 'pointer' : 'default' }}
+                               title={comment.author?.id ? "Перейти до профілю" : ""}
+                            >
                               <img
                                   src={comment.author?.avatar || "https://via.placeholder.com/40"}
                                   alt={comment.author?.name || "User"}
                                   className="comment-avatar"
                               />
                               <span className="comment-name">
-                          {comment.author?.name || 'Anonymous User'}
-                        </span>
+                                {comment.author?.name || 'Anonymous User'}
+                              </span>
                             </div>
                             <span className="comment-time">
-                        {new Date(comment.createdAt).toLocaleDateString()}
-                      </span>
+                              {new Date(comment.createdAt).toLocaleDateString()}
+                            </span>
                           </div>
                           <p className="comment-text">{comment.text}</p>
                         </div>
