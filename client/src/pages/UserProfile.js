@@ -17,7 +17,6 @@ const UserProfile = () => {
     setLoading(true);
     setError(null);
 
-    // Паралельне завантаження даних користувача та його курсів
     Promise.all([
       fetch(`${API_URL}/users/${id}`).then((res) => {
         if (!res.ok) throw new Error('Не вдалося завантажити дані користувача');
@@ -30,7 +29,7 @@ const UserProfile = () => {
     ])
       .then(([userData, coursesData]) => {
         setProfileUser(userData);
-        // Відображаємо лише опубліковані (схвалені) курси
+       
         setCourses(coursesData.filter((c) => c.status === 'approved'));
         setLoading(false);
       })
@@ -45,7 +44,6 @@ const UserProfile = () => {
   if (error) return <div className="profile-error">Помилка: {error}</div>;
   if (!profileUser) return <div className="profile-error">Користувача не знайдено</div>;
 
-  // Розрахунок статистики на основі завантажених курсів
   const totalCoursesCount = courses.length;
   const averageRating =
     totalCoursesCount > 0
@@ -58,7 +56,13 @@ const UserProfile = () => {
     <div className="user-profile-page">
       <main className="profile-main-container">
         
-        {/* Картка інформації профілю */}
+      <div className="profile-back-section">
+        <button className="back-circle-btn modern" onClick={() => navigate(-1)}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+          </svg>
+        </button>
+      </div>
         <div className="profile-info-card">
           <div className="profile-top-banner"></div>
           
@@ -88,7 +92,7 @@ const UserProfile = () => {
           </div>
         </div>
 
-        {/* Плитки статистики */}
+
         <div className="profile-stats-grid">
           <div className="stat-info-box">
             <span className="stat-box-label">TOTAL COURSES</span>
@@ -102,7 +106,6 @@ const UserProfile = () => {
           </div>
         </div>
 
-        {/* Секція опублікованих курсів */}
         <section className="user-published-section">
           <div className="section-title-row">
             <h2>Опубліковані курси</h2>
