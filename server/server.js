@@ -340,6 +340,7 @@ app.get('/courses/:id/comments', async (req, res) => {
       rating: review.rating,
       createdAt: review.createdAt,
       author: {
+        id: review.user_id ? review.user_id._id : null, /* ДОДАНО ЦЕЙ РЯДОК */
         name: review.user_id ? `${review.user_id.firstName} ${review.user_id.lastName}` : 'Невідомий користувач',
         avatar: review.user_id?.avatar
       }
@@ -379,6 +380,7 @@ app.post('/courses/:id/comments', async (req, res) => {
       rating: savedReview.rating,
       createdAt: savedReview.createdAt,
       author: {
+        id: savedReview.user_id ? savedReview.user_id._id : null, /* ДОДАНО ЦЕЙ РЯДОК */
         name: savedReview.user_id ? `${savedReview.user_id.firstName} ${savedReview.user_id.lastName}` : 'Невідомий користувач',
         avatar: savedReview.user_id?.avatar
       }
