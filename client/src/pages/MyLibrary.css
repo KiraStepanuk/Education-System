@@ -24,6 +24,8 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  min-height: 200px;
+  box-sizing: border-box;
 }
 
 .ls-card-dark {
@@ -33,46 +35,104 @@
   overflow: hidden;
 }
 
-.ls-card-blue { background: #e0e7ff; }
-.ls-card-white { background: white; border: 1px solid var(--border-color); }
+.ls-card-blue { 
+  background: #e0e7ff; 
+  color: #1e1b4b;
+}
+
+.ls-card-white { 
+  background: white; 
+  border: 1px solid var(--border-color); 
+  color: #0f172a;
+}
 
 .ls-card h4 {
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
   margin: 0 0 16px 0;
-  opacity: 0.8;
+  opacity: 0.9;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .ls-card h2 {
   font-size: 36px;
   margin: 0 0 8px 0;
+  font-weight: 700;
 }
 
 .ls-card p {
   font-size: 13px;
   margin: 0;
   opacity: 0.8;
+  line-height: 1.4;
 }
 
-.bar-chart-mock {
+.category-stats-container {
   display: flex;
-  align-items: flex-end;
-  gap: 10px;
-  height: 60px;
-  margin-top: 20px;
+  flex-direction: column;
+  height: 100%;
 }
 
-.bar {
-  flex: 1;
-  background: rgba(99, 102, 241, 0.3);
-  border-radius: 4px;
+.category-stats-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 10px;
 }
-.bar:nth-child(4) { background: #6366f1; } /* Активний */
+
+.category-stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.category-stat-info {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.category-name {
+  color: #e2e8f0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 220px;
+}
+
+.category-percentage {
+  color: #a5b4fc;
+}
+
+.category-progress-bar {
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.category-progress-fill {
+  height: 100%;
+  background: #6366f1;
+  border-radius: 4px;
+  transition: width 0.4s ease;
+}
+
+.empty-stats-text {
+  font-size: 13px;
+  color: #94a3b8;
+  line-height: 1.6;
+}
+
 
 .recent-courses {
   display: flex;
   gap: 24px;
   margin-bottom: 50px;
+  flex-wrap: wrap;
 }
 
 .recent-card {
@@ -83,7 +143,14 @@
   display: flex;
   gap: 16px;
   flex: 1;
+  min-width: 280px;
   align-items: center;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.recent-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.04);
 }
 
 .recent-img {
@@ -94,7 +161,29 @@
   object-fit: cover;
 }
 
-.recent-info h4 { margin: 0 0 4px 0; font-size: 15px; }
-.recent-info p { margin: 0 0 12px 0; font-size: 12px; color: var(--text-muted); }
-.progress-bar { width: 100%; height: 6px; background: #f1f5f9; border-radius: 3px; }
-.progress-fill { height: 100%; background: var(--primary-blue); border-radius: 3px; }
+.recent-info h4 { 
+  margin: 0 0 4px 0; 
+  font-size: 15px; 
+  color: #0f172a;
+}
+
+.recent-info p { 
+  margin: 0 0 8px 0; 
+  font-size: 12px; 
+  color: var(--text-muted); 
+}
+
+.recent-rating-badge {
+  font-size: 11px;
+  font-weight: 700;
+  color: #f59e0b;
+  background: #fef3c7;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+@media (max-width: 1024px) {
+  .library-stats-grid {
+    grid-template-columns: 1fr;
+  }
+}
