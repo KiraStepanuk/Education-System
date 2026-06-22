@@ -1,5 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import ReactQuill from 'react-quill-new';
+import 'react-quill-new/dist/quill.snow.css'; 
+
 import Footer from '../components/Layout/Footer/Footer';
 import { API_URL } from '../config';
 import './CourseEditor.css';
@@ -29,6 +32,17 @@ const CourseEditor = ({ user }) => {
   const [rejectReason, setRejectReason] = useState('');
   const [image, setImage] = useState('');
   const [loading, setLoading] = useState(isEditMode);
+
+  // Налаштування панелі інструментів
+  const modules = {
+    toolbar: [
+      [{ 'header': [1, 2, 3, false] }], 
+      [{ 'size': ['small', false, 'large', 'huge'] }], // Збільшення/зменшення шрифту
+      ['bold', 'italic', 'underline', 'strike'], 
+      [{ 'list': 'ordered'}, { 'list': 'bullet' }], 
+      ['clean'] 
+    ]
+  };
 
   useEffect(() => {
     if (isEditMode) {
@@ -71,6 +85,11 @@ const CourseEditor = ({ user }) => {
 
     if (!user || !user.id) {
       alert('Помилка: Ви не авторизовані! Будь ласка, увійдіть в систему знову.');
+      return;
+    }
+
+    if (!content || content === '<p><br></p>') {
+      alert('Будь ласка, заповніть текст курсу.');
       return;
     }
 
@@ -182,12 +201,13 @@ const CourseEditor = ({ user }) => {
 
           <div className="input-group">
             <label>Текст курсу (зміст)</label>
-            <textarea
-              className="course-content-textarea"
-              placeholder="Розпишіть детальну інформацію про ваш курс..."
+            <ReactQuill
+              theme="snow"
+              modules={modules}
               value={content}
-              onChange={(e) => setContent(e.target.value)}
-              required
+              onChange={setContent}
+              placeholder="Розпишіть детальну інформацію про ваш курс..."
+              className="course-content-quill"
             />
           </div>
 
