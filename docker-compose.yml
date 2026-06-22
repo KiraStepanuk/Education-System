@@ -20,6 +20,9 @@ services:
       - "5000:5000"
     environment:
       - MONGODB_URI=mongodb://db:27017/education
+      - CLOUDINARY_CLOUD_NAME=dxputzbkv
+      - CLOUDINARY_API_KEY=214482875827562
+      - CLOUDINARY_API_SECRET=KTQXxtap8QLTzIqJ6aL4K6xgL58
 
 volumes:
   mongo-data:
