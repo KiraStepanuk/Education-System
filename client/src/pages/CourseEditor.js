@@ -25,6 +25,7 @@ const CourseEditor = ({ user }) => {
   const navigate = useNavigate();
   const isEditMode = !!id;
   const fileInputRef = useRef(null);
+  const quillRef = useRef(null);
 
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState(CATEGORIES[0]);
@@ -33,15 +34,61 @@ const CourseEditor = ({ user }) => {
   const [image, setImage] = useState('');
   const [loading, setLoading] = useState(isEditMode);
 
+  const imageHandler = () => {
+    const input = document.createElement('input');
+    input.setAttribute('type', 'file');
+    input.setAttribute('accept', 'image/*, video/*');
+    input.click();
+
+    input.onchange = async () => {
+      const file = input.files[0];
+      if (!file) return;
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      try {
+        const response = await fetch(`${API_URL}/api/upload`, {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!response.ok) throw new Error('Upload failed');
+
+        const data = await response.json();
+        const url = data.url;
+
+        const quill = quillRef.current.getEditor();
+        const range = quill.getSelection(true);
+
+        if (file.type.startsWith('video/')) {
+          quill.insertEmbed(range.index, 'video', url);
+        } else {
+          quill.insertEmbed(range.index, 'image', url);
+        }
+
+        quill.setSelection(range.index + 1);
+      } catch (err) {
+        console.error('Помилка завантаження файлу:', err);
+        alert('Не вдалося завантажити файл');
+      }
+    };
+  };
+
   // Налаштування панелі інструментів
   const modules = {
-    toolbar: [
-      [{ 'header': [1, 2, 3, false] }], 
-      [{ 'size': ['small', false, 'large', 'huge'] }], // Збільшення/зменшення шрифту
-      ['bold', 'italic', 'underline', 'strike'], 
-      [{ 'list': 'ordered'}, { 'list': 'bullet' }], 
-      ['clean'] 
-    ]
+    toolbar: {
+      container: [
+        [{ 'header': [1, 2, 3, false] }],
+        [{ 'size': ['small', false, 'large', 'huge'] }],
+        ['bold', 'italic', 'underline', 'strike'],
+        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+        ['image', 'clean']
+      ],
+      handlers: {
+        image: imageHandler
+      }
+    }
   };
 
   useEffect(() => {
@@ -202,6 +249,7 @@ const CourseEditor = ({ user }) => {
           <div className="input-group">
             <label>Текст курсу (зміст)</label>
             <ReactQuill
+              ref={quillRef}
               theme="snow"
               modules={modules}
               value={content}
