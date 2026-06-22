@@ -6,12 +6,17 @@ const dotenv = require('dotenv');
 
 dotenv.config();
 
+const multer = require('multer');
+const { storage } = require('./config/cloudinary');
+
 const User = require('./models/User');
 const Course = require('./models/Course');
 const Review = require('./models/Review');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+
+const upload = multer({ storage });
 
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
@@ -41,7 +46,19 @@ async function checkRole(role) {
   };
 }
 
+app.post('/api/upload', upload.single('file'), (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'Файл не завантажено' });
+    }
 
+    res.json({
+      url: req.file.path
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 app.post('/auth/google', async (req, res) => {
   const { profile } = req.body;
@@ -185,8 +202,6 @@ app.put('/users/:id', async (req, res) => {
   }
 });
 
-
-
 app.get('/courses', async (req, res) => {
   const { status, sort, author_id } = req.query;
 
@@ -326,8 +341,6 @@ app.put('/courses/:id/reject', async (req, res) => {
   }
 });
 
-
-
 app.get('/courses/:id/comments', async (req, res) => {
   try {
     const comments = await Review.find({ course_id: req.params.id, comment: { $exists: true, $ne: "" } })
@@ -340,7 +353,7 @@ app.get('/courses/:id/comments', async (req, res) => {
       rating: review.rating,
       createdAt: review.createdAt,
       author: {
-        id: review.user_id ? review.user_id._id : null, /* ДОДАНО ЦЕЙ РЯДОК */
+        id: review.user_id ? review.user_id._id : null,
         name: review.user_id ? `${review.user_id.firstName} ${review.user_id.lastName}` : 'Невідомий користувач',
         avatar: review.user_id?.avatar
       }
@@ -380,7 +393,7 @@ app.post('/courses/:id/comments', async (req, res) => {
       rating: savedReview.rating,
       createdAt: savedReview.createdAt,
       author: {
-        id: savedReview.user_id ? savedReview.user_id._id : null, /* ДОДАНО ЦЕЙ РЯДОК */
+        id: savedReview.user_id ? savedReview.user_id._id : null,
         name: savedReview.user_id ? `${savedReview.user_id.firstName} ${savedReview.user_id.lastName}` : 'Невідомий користувач',
         avatar: savedReview.user_id?.avatar
       }
@@ -449,8 +462,6 @@ app.post('/courses/:id/rate', async (req, res) => {
   }
 });
 
-
-
 app.get('/users/:id/profile', async (req, res) => {
   try {
     const userId = req.params.id;
@@ -490,7 +501,6 @@ app.get('/users/:id/profile', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-
 
 app.post('/users/:id/favorites', async (req, res) => {
   const { courseId } = req.body;
@@ -536,6 +546,5 @@ app.get('/users/:id/favorites', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
