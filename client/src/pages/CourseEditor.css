@@ -142,25 +142,50 @@
   margin-bottom: 4px;
 }
 
-.course-content-textarea {
+.course-content-quill {
   width: 100%;
-  height: 350px;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  padding: 20px;
-  font-family: inherit;
-  font-size: 15px;
-  line-height: 1.6;
-  resize: vertical;
-  background-color: #f8fafc;
-  color: #0f172a;
-  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
 }
 
-.course-content-textarea:focus {
-  outline: none;
+.course-content-quill .ql-toolbar {
+  border: 1px solid #e2e8f0;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  background-color: #ffffff;
+  font-family: inherit;
+}
+
+.course-content-quill .ql-container {
+  border: 1px solid #e2e8f0;
+  border-top: none;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+  height: 350px;
+  background-color: #f8fafc;
+  font-family: inherit;
+  font-size: 15px;
+  color: #0f172a;
+  transition: all 0.2s ease;
+}
+
+.course-content-quill .ql-editor {
+  padding: 20px;
+  line-height: 1.6;
+}
+
+.course-content-quill .ql-editor.ql-blank::before {
+  color: #94a3b8;
+  font-style: normal;
+}
+
+.course-content-quill:focus-within .ql-container {
   border-color: #4f46e5;
-  background-color: white;
+  background-color: #ffffff;
+}
+
+.course-content-quill:focus-within .ql-toolbar {
+  border-color: #4f46e5;
 }
 
 .editor-actions {

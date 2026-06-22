@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import 'react-quill-new/dist/quill.snow.css';
 import Footer from '../components/Layout/Footer/Footer';
 import RejectModal from '../components/Unique/RejectModal/RejectModal';
 import { API_URL } from '../config';
@@ -151,7 +152,6 @@ const CoursePreview = ({ user }) => {
     }
   };
   
-  // Функція для кнопки Share
   const handleShare = () => {
     const currentUrl = window.location.href;
     
@@ -188,6 +188,33 @@ const CoursePreview = ({ user }) => {
 
   return (
       <div className="preview-page">
+        {/* Залізобетонний інжект стилів для фіксу перенесення слів безпосередньо у DOM */}
+        <style>{`
+          /* Застосовуємо правила до самого контейнера і до абсолютно кожного елемента всередині */
+          .preview-content-body,
+          .preview-content-body *,
+          .ql-editor,
+          .ql-editor * {
+            white-space: pre-wrap !important;
+            word-break: break-word !important;
+            overflow-wrap: break-word !important;
+          }
+          
+          /* Якщо всередині закралися теги pre або code, які намертво блокують перенесення */
+          .preview-content-body pre,
+          .preview-content-body code {
+            white-space: pre-wrap !important;
+            word-break: break-word !important;
+          }
+
+          /* Повертаємо нормальне відображення для блочних елементів */
+          .preview-content-body p,
+          .preview-content-body div {
+            display: block !important;
+            width: 100% !important;
+          }
+        `}</style>
+
         <main className="preview-container">
 
           <div className="preview-header-row">
@@ -208,15 +235,17 @@ const CoursePreview = ({ user }) => {
             <div className="preview-left-col">
               <div className="about-course-card">
                 <h2>About this course</h2>
-                <div className="preview-content-body">
-                  {course.content ? (
-                      course.content.split('\n').map((paragraph, index) => (
-                          <p key={index} className="preview-paragraph">{paragraph}</p>
-                      ))
-                  ) : (
-                      <p className="no-content-notice">Вміст курсу порожній.</p>
-                  )}
-                </div>
+                 <div className="preview-content-body ql-snow">
+                   {course.content ? (
+                     <div 
+                        className="ql-editor" 
+                        dangerouslySetInnerHTML={{ __html: course.content }} 
+                        style={{ padding: 0 }} 
+                        />
+                    ) : (
+                   <p className="no-content-notice">Вміст курсу порожній.</p>
+                   )}
+                 </div>
 
                 <div className="feedback-section">
                   <p>Your feedback helps the community</p>
@@ -258,7 +287,6 @@ const CoursePreview = ({ user }) => {
                     comments.map((comment) => (
                         <div className="comment-card" key={comment.id || comment._id}>
                           <div className="comment-header">
-                            {/* ДОДАНО ОБРОБНИК КЛІКУ ТА СТИЛІ */}
                             <div 
                                className="comment-user" 
                                onClick={() => comment.author?.id && navigate(`/profile/${comment.author.id}`)}
