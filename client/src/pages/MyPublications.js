@@ -161,6 +161,7 @@ const MyPublications = ({ user }) => {
               <div className="actions-cell">
                 <button className="btn-sm btn-view" onClick={() => navigate(`/courses/${course.id || course._id}`)}>Переглянути</button>
                 <button className="btn-sm btn-edit-sm" onClick={() => navigate(`/edit-course/${course.id || course._id}`)}>Редагувати</button>
+                <button className="btn-sm" style={{ background: '#eef2ff', color: '#4f46e5', border: '1px solid #c7d2fe' }} onClick={() => navigate(`/create-test/${course.id || course._id}`)}>Тест</button>
                 <button className="btn-sm btn-delete-sm" onClick={() => handleDelete(course.id || course._id)}>Видалити</button>
               </div>
             </div>

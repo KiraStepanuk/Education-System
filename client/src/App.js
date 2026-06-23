@@ -8,6 +8,8 @@ import CoursePreview from "./pages/CoursePreview";
 import CourseEditor from './pages/CourseEditor';
 import AllCourses from './pages/AllCourses';
 import MyLibrary from './pages/MyLibrary';
+import QuizAttempt from './pages/QuizAttempt';
+import TestCreator from './pages/TestCreator';
 import Sidebar from './components/Layout/Sidebar/Sidebar';
 import TopNav from './components/Layout/TopNav/TopNav';
 import MyPublications from './pages/MyPublications';
@@ -43,6 +45,8 @@ function AppContent({ user, setUser }) {
                           <Route path="/edit-course/:id" element={<CourseEditor user={user} />} />
                           <Route path="/publications" element={user ? <MyPublications user={user} /> : <Navigate to="/" />} />
                           <Route path="/profile/:id" element={<UserProfile />} />
+                          <Route path="/create-test/:courseId" element={<TestCreator user={user} />} />
+                          <Route path="/take-test/:courseId" element={<QuizAttempt user={user} />} />
                       </Routes>
                 </div>
             </main>
