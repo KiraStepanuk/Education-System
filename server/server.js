@@ -12,6 +12,8 @@ const { storage } = require('./config/cloudinary');
 const User = require('./models/User');
 const Course = require('./models/Course');
 const Review = require('./models/Review');
+const Quiz = require('./models/Quiz');
+const QuizResult = require('./models/QuizResult');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -542,6 +544,115 @@ app.get('/users/:id/favorites', async (req, res) => {
     });
 
     res.json(favorites);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/courses/:id/quiz', async (req, res) => {
+  const userId = req.headers['user_id'];
+  const { title, description, timeLimit, passingScore, questions } = req.body;
+
+  if (!userId) {
+    return res.status(401).json({ error: "Користувач не авторизований" });
+  }
+
+  try {
+    const course = await Course.findById(req.params.id);
+    if (!course) return res.status(404).json({ error: "Курс не знайдено" });
+
+    if (course.author_id.toString() !== userId) {
+      return res.status(403).json({ error: "Forbidden" });
+    }
+
+    let quiz = await Quiz.findOne({ course_id: req.params.id });
+
+    if (quiz) {
+      quiz.title = title;
+      quiz.description = description;
+      quiz.timeLimit = timeLimit;
+      quiz.passingScore = passingScore;
+      quiz.questions = questions;
+      await quiz.save();
+    } else {
+      quiz = new Quiz({
+        course_id: req.params.id,
+        title,
+        description,
+        timeLimit,
+        passingScore,
+        questions
+      });
+      await quiz.save();
+    }
+
+    res.json({ success: true, quiz_id: quiz._id });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/api/courses/:id/quiz', async (req, res) => {
+  try {
+    const quiz = await Quiz.findOne({ course_id: req.params.id })
+      .select('-questions.correctLetter');
+
+    if (!quiz) return res.status(404).json({ error: "Тест не знайдено" });
+
+    res.json(quiz);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/quizzes/:quiz_id/submit', async (req, res) => {
+  const { answers, timeSpent } = req.body;
+  const userId = req.headers['user_id'];
+
+  if (!userId) {
+    return res.status(401).json({ error: "Користувач не авторизований" });
+  }
+  if (!Array.isArray(answers)) {
+    return res.status(400).json({ error: "Некоректний формат відповідей" });
+  }
+
+  try {
+    const quiz = await Quiz.findById(req.params.quiz_id);
+    if (!quiz) return res.status(404).json({ error: "Тест не знайдено" });
+
+    let score = 0;
+
+    quiz.questions.forEach((question, index) => {
+      const userAnswer = answers.find(a => a.questionIndex === index);
+      if (userAnswer && userAnswer.selectedLetter === question.correctLetter) {
+        score += 1;
+      }
+    });
+
+    const totalQuestions = quiz.questions.length;
+    const percent = totalQuestions > 0 ? Math.round((score / totalQuestions) * 100) : 0;
+    const isPassed = percent >= (quiz.passingScore || 0);
+
+    const result = new QuizResult({
+      user_id: userId,
+      quiz_id: quiz._id,
+      course_id: quiz.course_id,
+      score,
+      totalQuestions,
+      percent,
+      isPassed,
+      timeSpent: timeSpent || 0
+    });
+
+    await result.save();
+
+    res.json({
+      success: true,
+      score,
+      totalQuestions,
+      percent,
+      isPassed
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
