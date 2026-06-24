@@ -1,5 +1,5 @@
 .sidebar {
-  width: 280px; /* Немного расширим для солидности */
+  width: 320px; /* Збільшено для солідності */
   height: 100vh;
   background-color: #ffffff;
   border-right: 1px solid #eef2f6;
@@ -104,7 +104,7 @@
   padding: 24px 16px;
 }
 
-/* Нижняя часть (Settings/Help) */
+/* Нижняя часть (Help) */
 .sidebar-bottom {
   padding: 16px;
   margin-top: auto;
@@ -130,4 +130,44 @@
 .sidebar-bottom-link:hover {
   background-color: #f8fafc;
   color: #475569;
+}
+
+/* Контейнер для Help з попапом */
+.sidebar-help-container {
+  position: relative;
+}
+
+/* Попап з контактом тех підтримки */
+.help-popup {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  background-color: #ffffff;
+  border: 1px solid #eef2f6;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  padding: 12px 16px;
+  min-width: 200px;
+  z-index: 210;
+}
+
+.help-popup-title {
+  margin: 0 0 6px 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.help-popup-link {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: #4f46e5;
+  text-decoration: none;
+}
+
+.help-popup-link:hover {
+  text-decoration: underline;
 }
