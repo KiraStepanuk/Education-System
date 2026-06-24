@@ -8,12 +8,6 @@ function Footer() {
         <div className="footer-left">
           <span className="footer-brand">Education-System</span>
         </div>
-        
-        <div className="footer-center">
-          <span className="footer-link">Privacy Policy</span>
-          <span className="footer-link">Terms of Service</span>
-          <span className="footer-link">Help Center</span>
-        </div>
 
         <div className="footer-right">
           <span className="footer-text">© “The Magnificent Seven-1” 2026</span>

@@ -17,7 +17,6 @@
 }
 
 .footer-left {
-  flex: 1;
   display: flex;
   align-items: center;
   justify-content: flex-start;
@@ -29,28 +28,7 @@
   color: #0f172a;
 }
 
-.footer-center {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 24px;
-}
-
-.footer-link {
-  color: #64748b;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: color 0.2s ease;
-}
-
-.footer-link:hover {
-  color: #0f172a;
-}
-
 .footer-right {
-  flex: 1;
   display: flex;
   align-items: center;
   justify-content: flex-end;
@@ -68,8 +46,8 @@
     text-align: center;
     gap: 16px;
   }
-  
-  .footer-left, .footer-center, .footer-right {
+
+  .footer-left, .footer-right {
     justify-content: center;
     width: 100%;
   }
