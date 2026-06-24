@@ -8,7 +8,7 @@ const optionLetters = ["A", "B", "C", "D", "E", "F", "G", "H"];
 
 const TestCreator = ({ user }) => {
   const navigate = useNavigate();
-  const { courseId } = useParams(); // Отримуємо ID курсу з URL
+  const { courseId } = useParams();
 
   // Налаштування тесту
   const [testSettings, setTestSettings] = useState({
@@ -17,6 +17,10 @@ const TestCreator = ({ user }) => {
     timeLimit: 45,
     passingScore: 60
   });
+
+  // Локальні стани для AI генерації
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiQuestionCount, setAiQuestionCount] = useState(5);
 
   // Список питань
   const [questions, setQuestions] = useState([
@@ -33,7 +37,7 @@ const TestCreator = ({ user }) => {
 
   const [loading, setLoading] = useState(true);
 
-  // Завантаження існуючого тесту при відкритті (якщо є)
+  // Завантаження існуючого тесту при відкритті
   useEffect(() => {
     fetch(`${API_URL}/api/courses/${courseId}/quiz`)
       .then(res => res.json())
@@ -67,6 +71,57 @@ const TestCreator = ({ user }) => {
       });
   }, [courseId]);
 
+  // --- ОБРОБНИК АВТОМАТИЧНОЇ ГЕНЕРАЦІЇ ШІ ---
+  const handleGenerateAI = async () => {
+    if (!user) {
+      alert("Необхідна авторизація.");
+      return;
+    }
+    if (aiQuestionCount < 3 || aiQuestionCount > 10) {
+      alert("Кількість питань має бути від 3 до 10.");
+      return;
+    }
+
+    setAiLoading(true);
+    try {
+      const response = await fetch(`${API_URL}/api/courses/${courseId}/quiz/generate-ai`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'user_id': user?.id || user?._id
+        },
+        body: JSON.stringify({ questionCount: aiQuestionCount })
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        // Форматуємо отриманий масив під структуру стейту
+        const formattedAIQuestions = data.questions.map((q, idx) => ({
+          id: idx + 1,
+          text: q.text,
+          correctLetter: q.correctLetter,
+          options: q.options.map((optText, i) => ({
+            letter: optionLetters[i] || String.fromCharCode(65 + i),
+            text: optText
+          }))
+        }));
+        
+        // Замінюємо існуючі питання згенерованими
+        setQuestions(formattedAIQuestions);
+        alert('Питання успішно згенеровано! Тепер ви можете переглянути та відредагувати їх перед збереженням.');
+      } else {
+        alert("Помилка генерації: " + data.error);
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Помилка з'єднання з сервером під час генерації.");
+    } finally {
+      setAiLoading(false);
+    }
+  };
+  // ------------------------------------------
+
   // Обробники налаштувань
   const handleSettingChange = (field, value) => {
     setTestSettings({ ...testSettings, [field]: value });
@@ -96,17 +151,14 @@ const TestCreator = ({ user }) => {
       if (q.id === qId) {
         if (q.options.length >= optionLetters.length) return q;
         const nextLetter = optionLetters[q.options.length];
-        return {
-          ...q,
-          options: [...q.options, { letter: nextLetter, text: '' }]
-        };
+        return { ...q, options: [...q.options, { letter: nextLetter, text: '' }] };
       }
       return q;
     }));
   };
 
   const handleAddQuestion = () => {
-    const newId = questions.length + 1;
+    const newId = questions.length > 0 ? Math.max(...questions.map(q => q.id)) + 1 : 1;
     const newQuestion = {
       id: newId,
       text: '',
@@ -121,24 +173,27 @@ const TestCreator = ({ user }) => {
     setQuestions([...questions, newQuestion]);
   };
 
-  // Експорт та збереження фінального об'єкту
-  const handlePublish = async () => {
-    if (!user) {
-      alert('Будь ласка, увійдіть в систему.');
+  const handleRemoveQuestion = (qId) => {
+    if (questions.length === 1) {
+      alert("У тесті має бути щонайменше 1 питання.");
       return;
     }
+    if (window.confirm("Видалити це питання?")) {
+      setQuestions(questions.filter(q => q.id !== qId));
+    }
+  };
 
-    // Перетворюємо дані під схему Mongoose (варіанти як масив рядків)
+  // Експорт та збереження фінального об'єкту
+  const handlePublish = async () => {
+    if (!user) return alert('Будь ласка, увійдіть в систему.');
+
     const payloadQuestions = questions.map(q => ({
       text: q.text,
       options: q.options.map(opt => opt.text),
       correctLetter: q.correctLetter
     }));
 
-    const payload = {
-      ...testSettings,
-      questions: payloadQuestions
-    };
+    const payload = { ...testSettings, questions: payloadQuestions };
 
     try {
       const response = await fetch(`${API_URL}/api/courses/${courseId}/quiz`, {
@@ -163,9 +218,7 @@ const TestCreator = ({ user }) => {
     }
   };
 
-  const handleSaveDraft = () => {
-    alert("Конструктор: Тест збережено у чернетку (локально).");
-  };
+  const handleSaveDraft = () => alert("Конструктор: Тест збережено у чернетку (локально).");
 
   if (loading) return <div style={{padding: 40}}>Завантаження конструктора...</div>;
 
@@ -190,6 +243,30 @@ const TestCreator = ({ user }) => {
             <button className="btn-publish" onClick={handlePublish}>Опублікувати тест</button>
           </div>
         </header>
+
+        {/* --- СЕКЦІЯ 0: ШІ ГЕНЕРАТОР --- */}
+        <section className="creator-card ai-generator-card">
+          <div className="creator-card-header ai-header">
+             <span className="ai-sparkle">✨</span> Автоматична генерація ШІ
+          </div>
+          <p className="ai-desc">Система Google Gemini проаналізує зміст вашого курсу та автоматично створить релевантні питання з варіантами відповідей.</p>
+          <div className="ai-controls">
+            <div className="creator-input-group" style={{ width: '220px', marginBottom: 0 }}>
+              <label>Кількість питань (3-10)</label>
+              <input
+                type="number"
+                min="3"
+                max="10"
+                className="creator-input"
+                value={aiQuestionCount}
+                onChange={(e) => setAiQuestionCount(Number(e.target.value))}
+              />
+            </div>
+            <button className="btn-generate-ai" onClick={handleGenerateAI} disabled={aiLoading}>
+              {aiLoading ? <div className="loading-spinner-sm"></div> : 'Згенерувати'}
+            </button>
+          </div>
+        </section>
 
         {/* --- СЕКЦІЯ 1: НАЛАШТУВАННЯ ТЕСТУ --- */}
         <section className="creator-card">
@@ -223,7 +300,6 @@ const TestCreator = ({ user }) => {
           </div>
 
           <div className="creator-inputs-row">
-            
             <div className="creator-input-group">
               <label>Час на проходження (хв)</label>
               <div className="icon-input-wrapper">
@@ -234,10 +310,7 @@ const TestCreator = ({ user }) => {
                   onChange={(e) => handleSettingChange('timeLimit', Number(e.target.value))}
                 />
                 <span className="input-inline-icon">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <polyline points="12 6 12 12 16 14"></polyline>
-                  </svg>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
                 </span>
               </div>
             </div>
@@ -252,26 +325,24 @@ const TestCreator = ({ user }) => {
                   onChange={(e) => handleSettingChange('passingScore', Number(e.target.value))}
                 />
                 <span className="input-inline-icon">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                  </svg>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
                 </span>
               </div>
             </div>
-
           </div>
         </section>
 
-        {/* --- СЕКЦІЯ 2: СПИСОК ПИТАНЬ (ДИНАМІЧНИЙ) --- */}
+        {/* --- СЕКЦІЯ 2: СПИСОК ПИТАНЬ --- */}
         {questions.map((question, index) => (
           <section className="creator-card question-card" key={question.id}>
-            
             <div className="question-card-title-bar">
               <h3>Питання №{index + 1}</h3>
+              <button className="btn-remove-question" onClick={() => handleRemoveQuestion(question.id)}>
+                Видалити
+              </button>
             </div>
 
             <div className="question-card-body">
-              
               <div className="creator-input-group">
                 <label>Текст питання</label>
                 <textarea 
@@ -283,20 +354,16 @@ const TestCreator = ({ user }) => {
               </div>
 
               <div className="creator-input-group">
-                <label>Варіанти відповідей</label>
+                <label>Варіанти відповідей (натисніть на кружок, щоб вказати правильну)</label>
                 <div className="options-container">
                   {question.options.map((opt) => (
                     <div className="option-edit-row" key={opt.letter}>
-                      
-                      {/* Радіо селектор вибору правильної відповіді */}
                       <div 
                         className={`radio-selector ${question.correctLetter === opt.letter ? 'active' : ''}`}
                         onClick={() => handleSelectCorrect(question.id, opt.letter)}
                       >
                         <div className="radio-selector-inner"></div>
                       </div>
-
-                      {/* Текстовий інпут з бейджем */}
                       <div className="option-input-box">
                         <div className="option-letter-badge">{opt.letter}</div>
                         <input 
@@ -307,7 +374,6 @@ const TestCreator = ({ user }) => {
                           onChange={(e) => handleOptionTextChange(question.id, opt.letter, e.target.value)}
                         />
                       </div>
-
                     </div>
                   ))}
                 </div>
@@ -317,13 +383,11 @@ const TestCreator = ({ user }) => {
                 <button className="btn-add-option" onClick={() => handleAddOption(question.id)}>
                   <span>⊕</span> Додати варіант
                 </button>
-                
                 <div className="question-type-dropdown">
                   <span>Тип: Одна правильна відповідь</span>
                   <span className="icon-more-vertical">⋮</span>
                 </div>
               </div>
-
             </div>
           </section>
         ))}
@@ -334,7 +398,7 @@ const TestCreator = ({ user }) => {
             <line x1="12" y1="5" x2="12" y2="19"></line>
             <line x1="5" y1="12" x2="19" y2="12"></line>
           </svg>
-          <span>Додати нове питання</span>
+          <span>Додати питання вручну</span>
         </button>
 
         {/* Нижня загальна панель дій */}

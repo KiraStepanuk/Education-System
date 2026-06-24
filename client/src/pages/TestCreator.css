@@ -377,3 +377,533 @@
     gap: 0;
   }
 }
+
+
+/* --- START OF FILE TestCreator.css --- */
+
+.creator-page-wrapper {
+  background-color: #f8fafc;
+  min-height: 100vh;
+  padding: 40px;
+  font-family: 'Inter', sans-serif;
+  color: #0f172a;
+  box-sizing: border-box;
+}
+
+.creator-container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+/* Хлібні крихти */
+.breadcrumbs {
+  font-size: 11px;
+  font-weight: 600;
+  color: #94a3b8;
+  margin-bottom: 12px;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.breadcrumbs span.active {
+  color: #0f172a;
+}
+
+/* Заголовок сторінки */
+.creator-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.creator-page-title {
+  font-size: 32px;
+  font-weight: 800;
+  margin: 0;
+  color: #0f172a;
+}
+
+.creator-header-actions {
+  display: flex;
+  gap: 12px;
+}
+
+/* Картки секцій */
+.creator-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 30px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.01);
+  box-sizing: border-box;
+}
+
+.creator-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #4f46e5;
+  margin-bottom: 24px;
+}
+
+/* --- СТИЛІ БЛОКУ АВТОМАТИЧНОЇ ГЕНЕРАЦІЇ ШІ --- */
+.ai-generator-card {
+  background: linear-gradient(145deg, #f5f3ff 0%, #ffffff 100%);
+  border: 1px solid #ddd6fe;
+  box-shadow: 0 10px 25px rgba(139, 92, 246, 0.05);
+}
+
+.ai-header {
+  color: #6d28d9;
+}
+
+.ai-sparkle {
+  font-size: 20px;
+}
+
+.ai-desc {
+  font-size: 14px;
+  color: #475569;
+  margin: 0 0 20px 0;
+  line-height: 1.5;
+}
+
+.ai-controls {
+  display: flex;
+  align-items: flex-end;
+  gap: 20px;
+}
+
+.btn-generate-ai {
+  background-color: #7c3aed;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+  min-width: 140px;
+}
+
+.btn-generate-ai:hover:not(:disabled) {
+  background-color: #6d28d9;
+}
+
+.btn-generate-ai:disabled {
+  background-color: #a78bfa;
+  cursor: not-allowed;
+}
+
+.loading-spinner-sm {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #ffffff;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+/* ------------------------------------------- */
+
+/* Поля вводу */
+.creator-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 20px;
+  width: 100%;
+  position: relative;
+}
+
+.creator-input-group label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.creator-input,
+.creator-textarea {
+  width: 100%;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 14px;
+  font-family: inherit;
+  color: #0f172a;
+  background-color: #ffffff;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.15s ease;
+}
+
+.creator-input:focus,
+.creator-textarea:focus {
+  border-color: #4f46e5;
+}
+
+.creator-textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.creator-input::placeholder,
+.creator-textarea::placeholder {
+  color: #94a3b8;
+}
+
+/* Рядок числових параметрів */
+.creator-inputs-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.icon-input-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.icon-input-wrapper .creator-input {
+  padding-right: 44px;
+}
+
+.input-inline-icon {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+}
+
+/* Картка Питання */
+.question-card {
+  padding: 0;
+  overflow: hidden;
+}
+
+.question-card-title-bar {
+  background-color: #eff6ff;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 16px 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.question-card-title-bar h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: #1e3a8a;
+}
+
+.btn-remove-question {
+  background: none;
+  border: none;
+  color: #ef4444;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-remove-question:hover {
+  text-decoration: underline;
+}
+
+.question-card-body {
+  padding: 30px;
+}
+
+/* Список варіантів відповідей */
+.options-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.option-edit-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+}
+
+/* Кастомний радіо-баттон */
+.radio-selector {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid #cbd5e1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background-color: #ffffff;
+  flex-shrink: 0;
+}
+
+.radio-selector.active {
+  border-color: #4f46e5;
+  background-color: #ffffff;
+}
+
+.radio-selector-inner {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: transparent;
+}
+
+.radio-selector.active .radio-selector-inner {
+  background-color: #4f46e5;
+}
+
+/* Блок вводу варіанту */
+.option-input-box {
+  display: flex;
+  align-items: center;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background-color: #ffffff;
+  width: 100%;
+  overflow: hidden;
+}
+
+.option-letter-badge {
+  width: 44px;
+  height: 44px;
+  background-color: #f1f5f9;
+  border-right: 1px solid #cbd5e1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: #1e293b;
+  flex-shrink: 0;
+}
+
+.option-text-input {
+  width: 100%;
+  border: none;
+  outline: none;
+  padding: 12px 16px;
+  font-size: 14px;
+  font-family: inherit;
+  color: #0f172a;
+}
+
+/* Підвал картки питання */
+.question-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.btn-add-option {
+  background: none;
+  border: none;
+  color: #4f46e5;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-add-option:hover {
+  color: #4338ca;
+}
+
+.question-type-dropdown {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 11px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+/* Кнопка "Додати нове питання" */
+.btn-dashed-add-question {
+  width: 100%;
+  background: none;
+  border: 2px dashed #cbd5e1;
+  border-radius: 16px;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: 40px;
+}
+
+.btn-dashed-add-question:hover {
+  border-color: #4f46e5;
+  background-color: #eef2ff;
+}
+
+.btn-dashed-add-question span {
+  font-size: 14px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+/* Нижня загальна панель дій */
+.creator-bottom-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 24px;
+}
+
+/* Стандартні кнопки */
+.btn-save-draft {
+  background-color: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #334155;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-save-draft:hover {
+  background-color: #f1f5f9;
+}
+
+.btn-publish {
+  background-color: #4f46e5;
+  border: 1px solid #4f46e5;
+  color: #ffffff;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-publish:hover {
+  background-color: #4338ca;
+}
+
+.btn-cancel {
+  background-color: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #64748b;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-cancel:hover {
+  background-color: #f1f5f9;
+  color: #0f172a;
+}
+
+@media (max-width: 600px) {
+  .creator-inputs-row {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+}
+
+/* Додайте ці стилі до існуючого TestCreator.css */
+
+.ai-loading-container {
+    width: 100%;
+    margin-top: 10px;
+}
+
+.ai-progress-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    color: #4f46e5;
+    font-weight: 500;
+    margin-bottom: 8px;
+}
+
+.ai-progress-bar-bg {
+    width: 100%;
+    height: 12px;
+    background-color: #e2e8f0;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.ai-progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #4f46e5, #7c3aed);
+    border-radius: 10px;
+    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+}
+
+/* Анімація блиску на прогрес-барі */
+.ai-progress-bar-fill::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.3) 50%,
+        rgba(255, 255, 255, 0) 100%
+    );
+    animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+.btn-generate-ai {
+    background-color: #4f46e5;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-generate-ai:hover {
+    background-color: #4338ca;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+}
