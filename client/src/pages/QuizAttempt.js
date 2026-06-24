@@ -118,6 +118,10 @@ const QuizAttempt = ({ user }) => {
   const currentQuestion = quiz.questions[currentQIndex];
   const totalQuestions = quiz.questions.length;
 
+  // Розрахунок лінії прогресу (виправлено баг з object length)
+  const answeredCount = Object.keys(answers).length;
+  const progressOffset = `${100 - (answeredCount / totalQuestions) * 100}%`;
+
   // SVG іконки
   const FlagIcon = () => (
     <svg width="16" height="16" viewBox="0 0 24 24" fill={flagged.has(currentQIndex) ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -130,12 +134,13 @@ const QuizAttempt = ({ user }) => {
     <div className="quiz-page-container">
       {/* HEADER */}
       <header className="quiz-header">
-        <div className="quiz-header-left">
-          <div className="quiz-logo" style={{cursor: 'pointer'}} onClick={() => navigate('/home')}>ScholarSync</div>
-          <div className="quiz-title-divider"></div>
-          <div className="quiz-title-wrapper">
-            <span className="quiz-course-title">{quiz.title || 'Проходження тесту'}</span>
-            <div className="quiz-progress-line" style={{ right: `-${(answers.length / totalQuestions) * 100}px` }}></div>
+        {/* Прибрано хардкод лого та назви згідно з ТЗ */}
+        <div className="quiz-header-left" style={{ flex: 1, marginRight: '40px' }}>
+          <div className="quiz-title-wrapper" style={{ width: '100%', minWidth: '150px' }}>
+            <div 
+              className="quiz-progress-line" 
+              style={{ left: 0, right: progressOffset }}
+            ></div>
           </div>
         </div>
 
