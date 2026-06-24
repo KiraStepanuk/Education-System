@@ -618,4 +618,50 @@ app.post('/api/quizzes/:quiz_id/submit', async (req, res) => {
   }
 });
 
+// --- ОТРИМАННЯ ВСІХ УНІКАЛЬНИХ КАТЕГОРІЙ ---
+app.get('/api/categories', async (req, res) => {
+  try {
+    // Шукаємо всі унікальні значення поля 'category'
+    // Тільки серед курсів, які схвалені (approved) і де категорія не є порожнім рядком
+    const categories = await Course.distinct('category', {
+      status: 'approved',
+      category: { $ne: '' }
+    });
+
+    res.json(categories);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// --- НОВИЙ РОУТ: ЖИВИЙ ПОШУК КОРИСТУВАЧІВ ---
+app.get('/api/users/search', async (req, res) => {
+  const { q } = req.query;
+
+  // Якщо запит порожній, повертаємо порожній масив
+  if (!q || q.trim() === '') {
+    return res.json([]);
+  }
+
+  try {
+    // Створюємо регулярний вираз для пошуку без урахування регістру (i)
+    const regex = new RegExp(q, 'i');
+
+    // Шукаємо збіги в імені, прізвищі або логіні (username)
+    const users = await User.find({
+      $or: [
+        { firstName: regex },
+        { lastName: regex },
+        { username: regex }
+      ]
+    })
+        .select('firstName lastName avatar role _id') // Забираємо лише ті дані, що потрібні для пошуку
+        .limit(5); // Обмежуємо результат до 5 осіб, щоб не перевантажувати інтерфейс
+
+    res.json(users);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
