@@ -1,4 +1,4 @@
-/* --- START OF FILE QuizAttempt.js --- */
+// --- START OF FILE QuizAttempt.js ---
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { API_URL } from '../config';
@@ -8,27 +8,24 @@ const QuizAttempt = ({ user }) => {
   const navigate = useNavigate();
   const { courseId } = useParams();
   
-  // Стани квізу
   const [quiz, setQuiz] = useState(null);
   const [currentQIndex, setCurrentQIndex] = useState(0); 
   const [answers, setAnswers] = useState({}); 
   const [flagged, setFlagged] = useState(new Set());
   const [timeLeft, setTimeLeft] = useState(0); 
 
-  // Завантаження тесту
   useEffect(() => {
     fetch(`${API_URL}/api/courses/${courseId}/quiz`)
       .then(res => res.json())
       .then(data => {
         if (!data.error) {
           setQuiz(data);
-          setTimeLeft(data.timeLimit * 60); // переводимо хвилини в секунди
+          setTimeLeft(data.timeLimit * 60); 
         }
       })
       .catch(console.error);
   }, [courseId]);
 
-  // Логіка таймера
   useEffect(() => {
     if (!quiz) return;
     const timer = setInterval(() => {
@@ -43,7 +40,6 @@ const QuizAttempt = ({ user }) => {
     return `${m}:${s < 10 ? '0' : ''}${s}`;
   };
 
-  // Обробники дій
   const handleSelectOption = (optionIndex) => {
     setAnswers({ ...answers, [currentQIndex]: optionIndex });
   };
@@ -63,7 +59,6 @@ const QuizAttempt = ({ user }) => {
     setFlagged(newFlagged);
   };
 
-  // Завершення тесту: Формуємо дані і відправляємо на сервер
   const handleFinish = async () => {
     const confirm = window.confirm("Ви впевнені, що хочете завершити тест та відправити результати?");
     if (!confirm) return;
@@ -74,10 +69,8 @@ const QuizAttempt = ({ user }) => {
       return;
     }
 
-    // Форматуємо відповіді для бекенда
     const formattedAnswers = Object.keys(answers).map(qIdx => {
       const selectedNumber = answers[qIdx];
-      // Перетворюємо індекс 0, 1, 2, 3 у A, B, C, D
       const selectedLetter = String.fromCharCode(65 + selectedNumber); 
       return {
         questionIndex: parseInt(qIdx),
@@ -86,6 +79,8 @@ const QuizAttempt = ({ user }) => {
     });
 
     try {
+      const timeSpent = (quiz.timeLimit * 60) - timeLeft; // Рахуємо витрачений час
+
       const response = await fetch(`${API_URL}/api/quizzes/${quiz._id}/submit`, {
         method: 'POST',
         headers: { 
@@ -94,14 +89,14 @@ const QuizAttempt = ({ user }) => {
         },
         body: JSON.stringify({
           answers: formattedAnswers,
-          timeSpent: (quiz.timeLimit * 60) - timeLeft
+          timeSpent: timeSpent
         })
       });
 
       const data = await response.json();
       if (response.ok) {
-        alert(`Тест завершено!\n\nВаш результат: ${data.percent}% (${data.score} з ${data.totalQuestions} правильних відповідей).\n${data.isPassed ? "Ви успішно склали тест!" : "На жаль, тест не складено. Спробуйте ще раз."}`);
-        navigate(`/courses/${courseId}`);
+        // Замість alert робимо навігацію і передаємо state
+        navigate(`/quiz-results/${courseId}`, { state: { result: data, timeSpent } });
       } else {
         alert("Помилка відправки результатів: " + data.error);
         navigate(`/courses/${courseId}`);
@@ -117,12 +112,9 @@ const QuizAttempt = ({ user }) => {
 
   const currentQuestion = quiz.questions[currentQIndex];
   const totalQuestions = quiz.questions.length;
-
-  // Розрахунок лінії прогресу (виправлено баг з object length)
   const answeredCount = Object.keys(answers).length;
   const progressOffset = `${100 - (answeredCount / totalQuestions) * 100}%`;
 
-  // SVG іконки
   const FlagIcon = () => (
     <svg width="16" height="16" viewBox="0 0 24 24" fill={flagged.has(currentQIndex) ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path>
@@ -132,15 +124,10 @@ const QuizAttempt = ({ user }) => {
 
   return (
     <div className="quiz-page-container">
-      {/* HEADER */}
       <header className="quiz-header">
-        {/* Прибрано хардкод лого та назви згідно з ТЗ */}
         <div className="quiz-header-left" style={{ flex: 1, marginRight: '40px' }}>
           <div className="quiz-title-wrapper" style={{ width: '100%', minWidth: '150px' }}>
-            <div 
-              className="quiz-progress-line" 
-              style={{ left: 0, right: progressOffset }}
-            ></div>
+            <div className="quiz-progress-line" style={{ left: 0, right: progressOffset }}></div>
           </div>
         </div>
 
@@ -156,55 +143,37 @@ const QuizAttempt = ({ user }) => {
         </div>
       </header>
 
-      {/* MAIN LAYOUT */}
       <main className="quiz-main-content">
-        
-        {/* LEFT SIDEBAR */}
         <aside className="quiz-sidebar">
           <div className="quiz-progress-card">
             <h3 className="quiz-progress-title">ПРОГРЕС ТЕСТУ</h3>
-            
             <div className="question-grid">
               {quiz.questions.map((_, idx) => {
                 let statusClass = "remaining";
                 if (idx === currentQIndex) statusClass = "current";
                 else if (answers[idx] !== undefined) statusClass = "answered";
-
                 const isFlagged = flagged.has(idx) ? "flagged" : "";
-
                 return (
                   <div className="q-node-wrapper" key={idx}>
-                    <div 
-                      className={`q-node ${statusClass} ${isFlagged}`}
-                      onClick={() => setCurrentQIndex(idx)}
-                    >
+                    <div className={`q-node ${statusClass} ${isFlagged}`} onClick={() => setCurrentQIndex(idx)}>
                       {idx + 1}
                     </div>
                   </div>
                 );
               })}
             </div>
-
             <div className="progress-legend">
-              <div className="legend-item">
-                <span className="legend-dot answered"></span> Відповів(ла)
-              </div>
-              <div className="legend-item">
-                <span className="legend-dot current"></span> Поточне
-              </div>
-              <div className="legend-item">
-                <span className="legend-dot remaining"></span> Залишилось
-              </div>
+              <div className="legend-item"><span className="legend-dot answered"></span> Відповів(ла)</div>
+              <div className="legend-item"><span className="legend-dot current"></span> Поточне</div>
+              <div className="legend-item"><span className="legend-dot remaining"></span> Залишилось</div>
             </div>
           </div>
-
           <div className="pro-tip-card">
             <h4>Порада</h4>
             <p>"{quiz.description || 'Уважно читайте питання перед тим як дати відповідь. Удачі!'}"</p>
           </div>
         </aside>
 
-        {/* QUESTION AREA */}
         <div className="quiz-question-area">
           <div className="question-header-card">
             <div className="q-header-top">
@@ -220,14 +189,8 @@ const QuizAttempt = ({ user }) => {
             {currentQuestion.options.map((optionText, idx) => {
               const isSelected = answers[currentQIndex] === idx;
               return (
-                <div 
-                  key={idx} 
-                  className={`option-card ${isSelected ? 'selected' : ''}`}
-                  onClick={() => handleSelectOption(idx)}
-                >
-                  <div className="custom-radio">
-                    <div className="custom-radio-inner"></div>
-                  </div>
+                <div key={idx} className={`option-card ${isSelected ? 'selected' : ''}`} onClick={() => handleSelectOption(idx)}>
+                  <div className="custom-radio"><div className="custom-radio-inner"></div></div>
                   <span className="option-text">{optionText}</span>
                 </div>
               );
@@ -235,11 +198,7 @@ const QuizAttempt = ({ user }) => {
           </div>
 
           <div className="quiz-controls">
-            <button 
-              className="btn-prev" 
-              onClick={handlePrev} 
-              disabled={currentQIndex === 0}
-            >
+            <button className="btn-prev" onClick={handlePrev} disabled={currentQIndex === 0}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
               Попереднє питання
             </button>
@@ -266,3 +225,4 @@ const QuizAttempt = ({ user }) => {
 };
 
 export default QuizAttempt;
+// --- END OF FILE QuizAttempt.js ---
