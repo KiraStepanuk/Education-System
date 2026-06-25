@@ -469,7 +469,7 @@ app.get('/users/:id/favorites', async (req, res) => {
   }
 });
 
-// --- ВИПРАВЛЕНО: ВИДАЛЕНО ПАРАМЕТР, ЩО ВИКЛИКАВ ПОМИЛКУ 500 ---
+// --- ВПРОВАДЖЕНО: Цикл повторних спроб (Retry Loop), валідація структури JSON та українізація ---
 app.post('/api/courses/:id/quiz/generate-ai', async (req, res) => {
   const userId = req.headers['user_id'];
   const { questionCount } = req.body;
@@ -487,45 +487,90 @@ app.post('/api/courses/:id/quiz/generate-ai', async (req, res) => {
     const model = genAI.getGenerativeModel({ model: "gemma-4-31b-it" });
 
     const prompt = `
-    TASK: Generate a quiz.
+    TASK: Generate a multiple-choice quiz based on the text.
     COUNT: Exactly ${questionCount || 5} questions.
-    LANG: Same as text.
+    LANGUAGE: Ukrainian (Українською мовою). Усі питання та варіанти відповідей мають бути ВИКЛЮЧНО українською мовою.
     FORMAT: Strictly return a JSON array. 
     
-    Example: [{"text": "...", "options": ["...", "...", "...", "..."], "correctLetter": "A"}]
+    Example: [{"text": "Яке з цих тверджень є правильним?", "options": ["Варіант А", "Варіант Б", "Варіант В", "Варіант Г"], "correctLetter": "A"}]
     
     TEXT:
     ${cleanText}
     `;
 
-    const result = await model.generateContent(prompt);
-    let responseText = result.response.text();
-
-    // --- РОЗУМНИЙ ПАРСЕР ДЛЯ ГОРЛАСТОЇ МОДЕЛІ ---
+    const delay = ms => new Promise(res => setTimeout(res, ms));
+    const maxAttempts = 4;
+    let attempt = 0;
     let questionsArray = null;
+    let lastError = null;
 
-    // 1. Шукаємо всі блоки, що схожі на масиви JSON [ ... ]
-    const jsonRegex = /\[\s*\{[\s\S]*?\}\s*\]/g;
-    const matches = responseText.match(jsonRegex);
+    while (attempt < maxAttempts) {
+      try {
+        const result = await model.generateContent(prompt);
+        let responseText = result.response.text();
 
-    if (matches) {
-      // Проходимо по кожному знайденому блоку і намагаємось його розпарсити
-      for (const match of matches) {
-        try {
-          const parsed = JSON.parse(match);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            questionsArray = parsed;
-            break; // Знайшли перший робочий масив — зупиняємось
+        let parsedArray = null;
+        // Шукаємо всі блоки, що схожі на масиви JSON [ ... ]
+        const jsonRegex = /\[\s*\{[\s\S]*?\}\s*\]/g;
+        const matches = responseText.match(jsonRegex);
+
+        if (matches) {
+          for (const match of matches) {
+            try {
+              const parsed = JSON.parse(match);
+              if (Array.isArray(parsed) && parsed.length > 0) {
+                parsedArray = parsed;
+                break;
+              }
+            } catch (e) {
+              continue;
+            }
           }
-        } catch (e) {
-          continue; // Цей блок бітий, йдемо до наступного
+        }
+
+        if (!parsedArray) {
+          throw new Error("ШІ надіслав некоректну структуру даних або пусту відповідь.");
+        }
+
+        // Валідація структури
+        let isValid = true;
+        for (const q of parsedArray) {
+          if (!q.text || typeof q.text !== 'string' || q.text.trim() === '') {
+            isValid = false; break;
+          }
+          if (!Array.isArray(q.options) || q.options.length < 2) {
+            isValid = false; break;
+          }
+          const validOptions = q.options.filter(opt => typeof opt === 'string' && opt.trim() !== '');
+          if (validOptions.length < 2) {
+            isValid = false; break;
+          }
+          if (!q.correctLetter || typeof q.correctLetter !== 'string' || q.correctLetter.trim() === '') {
+            isValid = false; break;
+          }
+        }
+
+        if (!isValid) {
+          throw new Error("Згенеровані дані не пройшли валідацію структури (відсутні обов'язкові поля або замало варіантів).");
+        }
+
+        questionsArray = parsedArray;
+        break; // Успішна ітерація
+      } catch (err) {
+        lastError = err;
+        attempt++;
+        if (attempt < maxAttempts) {
+          console.warn(`Спроба ${attempt} генерації невдала: ${err.message}. Повторюємо...`);
+          await delay(2000); // Затримка 2 секунди
         }
       }
     }
 
     if (!questionsArray) {
-      console.log("Невдала відповідь ШІ:", responseText);
-      throw new Error("ШІ надіслав некоректну структуру даних.");
+      console.error("Усі спроби генерації виявилися невдалими:", lastError);
+      return res.status(500).json({ 
+        error: "Помилка генерації: " + (lastError ? lastError.message : "Невідома помилка") 
+      });
     }
 
     res.json({ success: true, questions: questionsArray });
@@ -666,8 +711,6 @@ app.get('/api/users/search', async (req, res) => {
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
-
-
 app.get('/api/users/:id/quiz-results', async (req, res) => {
   try {
     // Шукаємо лише успішно складені тести
@@ -691,4 +734,3 @@ app.get('/api/users/:id/quiz-results', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-
