@@ -665,3 +665,30 @@ app.get('/api/users/search', async (req, res) => {
 });
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+
+
+app.get('/api/users/:id/quiz-results', async (req, res) => {
+  try {
+    // Шукаємо лише успішно складені тести
+    const results = await QuizResult.find({ user_id: req.params.id, isPassed: true })
+      .populate('course_id', 'title image category')
+      .sort({ createdAt: -1 }); // Найновіші першими
+
+    // Відфільтровуємо дублікати (якщо користувач здав один тест кілька разів успішно, залишаємо найновіший)
+    const uniqueResults = [];
+    const courseIds = new Set();
+    
+    for (const res of results) {
+      if (res.course_id && !courseIds.has(res.course_id._id.toString())) {
+        courseIds.add(res.course_id._id.toString());
+        uniqueResults.push(res);
+      }
+    }
+
+    res.json(uniqueResults);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+

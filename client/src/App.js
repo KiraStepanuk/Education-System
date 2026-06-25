@@ -15,7 +15,7 @@ import TopNav from './components/Layout/TopNav/TopNav';
 import MyPublications from './pages/MyPublications';
 import UserProfile from './pages/UserProfile';
 import './App.css';
-
+import QuizResults from './pages/QuizResults';
 
 function AppContent({ user, setUser }) {
   const location = useLocation();
@@ -47,6 +47,7 @@ function AppContent({ user, setUser }) {
                           <Route path="/profile/:id" element={<UserProfile />} />
                           <Route path="/create-test/:courseId" element={<TestCreator user={user} />} />
                           <Route path="/take-test/:courseId" element={<QuizAttempt user={user} />} />
+                            <Route path="/quiz-results/:courseId" element={<QuizResults />} />
                       </Routes>
                 </div>
             </main>
