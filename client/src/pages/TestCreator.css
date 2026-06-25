@@ -907,3 +907,47 @@
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
 }
+
+/* Кнопка назад (в стилі решти додатку) */
+.back-circle-btn.modern {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: none;
+  background-color: #4f46e5;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+}
+
+.back-circle-btn.modern:hover {
+  background-color: #4338ca;
+  transform: scale(1.05);
+}
+
+.back-circle-btn.modern:active {
+  transform: scale(0.95);
+}
+
+/* Кнопка видалення варіанту (хрестик в інпуті) */
+.btn-remove-option-inline {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  font-size: 20px;
+  font-weight: 400;
+  cursor: pointer;
+  padding: 0 16px;
+  transition: color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-remove-option-inline:hover {
+  color: #ef4444;
+}

@@ -18,9 +18,10 @@ const TestCreator = ({ user }) => {
     passingScore: 60
   });
 
-  // Локальні стани для AI генерації
+  // Локальні стани для AI генерації та назви курсу
   const [aiLoading, setAiLoading] = useState(false);
   const [aiQuestionCount, setAiQuestionCount] = useState(5);
+  const [courseTitle, setCourseTitle] = useState('Завантаження...');
 
   // Список питань
   const [questions, setQuestions] = useState([
@@ -37,8 +38,21 @@ const TestCreator = ({ user }) => {
 
   const [loading, setLoading] = useState(true);
 
-  // Завантаження існуючого тесту при відкритті
+  // Завантаження існуючого тесту та інформації про курс
   useEffect(() => {
+    // Отримуємо назву курсу
+    fetch(`${API_URL}/courses/${courseId}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.title) {
+          setCourseTitle(data.title);
+        } else {
+          setCourseTitle('Невідомий курс');
+        }
+      })
+      .catch(err => console.error("Помилка завантаження курсу", err));
+
+    // Отримуємо сам тест
     fetch(`${API_URL}/api/courses/${courseId}/quiz`)
       .then(res => res.json())
       .then(data => {
@@ -96,7 +110,6 @@ const TestCreator = ({ user }) => {
       const data = await response.json();
 
       if (response.ok && data.success) {
-        // Форматуємо отриманий масив під структуру стейту
         const formattedAIQuestions = data.questions.map((q, idx) => ({
           id: idx + 1,
           text: q.text,
@@ -107,7 +120,6 @@ const TestCreator = ({ user }) => {
           }))
         }));
         
-        // Замінюємо існуючі питання згенерованими
         setQuestions(formattedAIQuestions);
         alert('Питання успішно згенеровано! Тепер ви можете переглянути та відредагувати їх перед збереженням.');
       } else {
@@ -120,7 +132,6 @@ const TestCreator = ({ user }) => {
       setAiLoading(false);
     }
   };
-  // ------------------------------------------
 
   // Обробники налаштувань
   const handleSettingChange = (field, value) => {
@@ -157,6 +168,35 @@ const TestCreator = ({ user }) => {
     }));
   };
 
+  const handleRemoveOption = (qId, letterToRemove) => {
+    setQuestions(questions.map(q => {
+      if (q.id === qId) {
+        if (q.options.length <= 2) {
+          alert("Питання має містити мінімум 2 варіанти відповіді.");
+          return q;
+        }
+        
+        // Видаляємо вибраний варіант
+        const filteredOptions = q.options.filter(o => o.letter !== letterToRemove);
+        
+        // Перепризначаємо букви (A, B, C...) по порядку
+        const updatedOptions = filteredOptions.map((o, idx) => ({
+          ...o,
+          letter: optionLetters[idx]
+        }));
+        
+        // Якщо видалили правильну відповідь, робимо першу відповідь правильною
+        let newCorrectLetter = q.correctLetter;
+        if (!updatedOptions.find(o => o.letter === newCorrectLetter)) {
+          newCorrectLetter = updatedOptions[0].letter;
+        }
+        
+        return { ...q, options: updatedOptions, correctLetter: newCorrectLetter };
+      }
+      return q;
+    }));
+  };
+
   const handleAddQuestion = () => {
     const newId = questions.length > 0 ? Math.max(...questions.map(q => q.id)) + 1 : 1;
     const newQuestion = {
@@ -183,7 +223,6 @@ const TestCreator = ({ user }) => {
     }
   };
 
-  // Експорт та збереження фінального об'єкту
   const handlePublish = async () => {
     if (!user) return alert('Будь ласка, увійдіть в систему.');
 
@@ -218,33 +257,27 @@ const TestCreator = ({ user }) => {
     }
   };
 
-  const handleSaveDraft = () => alert("Конструктор: Тест збережено у чернетку (локально).");
-
   if (loading) return <div style={{padding: 40}}>Завантаження конструктора...</div>;
 
   return (
     <div className="creator-page-wrapper">
       <div className="creator-container">
-        
-        {/* Хлібні крихти */}
-        <div className="breadcrumbs">
-          <span>Мої видання</span>
-          <span>&gt;</span>
-          <span>Назва курсу</span>
-          <span>&gt;</span>
-          <span className="active">Конструктор тесту</span>
-        </div>
 
-        {/* Шапка конструктора */}
+        {/* Шапка конструктора з кнопкою Назад */}
         <header className="creator-header-row">
-          <h1 className="creator-page-title">Конструктор тесту</h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <button className="back-circle-btn modern" onClick={() => navigate(-1)} type="button" title="Назад">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            </button>
+            <h1 className="creator-page-title">Конструктор тесту</h1>
+          </div>
+          
           <div className="creator-header-actions">
-            <button className="btn-save-draft" onClick={handleSaveDraft}>Зберегти як чернетку</button>
             <button className="btn-publish" onClick={handlePublish}>Опублікувати тест</button>
           </div>
         </header>
 
-        {/* --- СЕКЦІЯ 0: ШІ ГЕНЕРАТОР --- */}
+        {/* СЕКЦІЯ 0: ШІ ГЕНЕРАТОР */}
         <section className="creator-card ai-generator-card">
           <div className="creator-card-header ai-header">
              <span className="ai-sparkle">✨</span> Автоматична генерація ШІ
@@ -268,7 +301,7 @@ const TestCreator = ({ user }) => {
           </div>
         </section>
 
-        {/* --- СЕКЦІЯ 1: НАЛАШТУВАННЯ ТЕСТУ --- */}
+        {/* СЕКЦІЯ 1: НАЛАШТУВАННЯ ТЕСТУ */}
         <section className="creator-card">
           <div className="creator-card-header">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -332,7 +365,7 @@ const TestCreator = ({ user }) => {
           </div>
         </section>
 
-        {/* --- СЕКЦІЯ 2: СПИСОК ПИТАНЬ --- */}
+        {/* СЕКЦІЯ 2: СПИСОК ПИТАНЬ */}
         {questions.map((question, index) => (
           <section className="creator-card question-card" key={question.id}>
             <div className="question-card-title-bar">
@@ -373,6 +406,15 @@ const TestCreator = ({ user }) => {
                           value={opt.text}
                           onChange={(e) => handleOptionTextChange(question.id, opt.letter, e.target.value)}
                         />
+                        {/* Кнопка видалення конкретного варіанту */}
+                        <button 
+                          type="button" 
+                          className="btn-remove-option-inline"
+                          onClick={() => handleRemoveOption(question.id, opt.letter)}
+                          title="Видалити варіант"
+                        >
+                          &times;
+                        </button>
                       </div>
                     </div>
                   ))}
@@ -392,7 +434,7 @@ const TestCreator = ({ user }) => {
           </section>
         ))}
 
-        {/* --- СЕКЦІЯ 3: КНОПКА ДОДАННЯ НОВОГО ПИТАННЯ --- */}
+        {/* СЕКЦІЯ 3: КНОПКА ДОДАННЯ НОВОГО ПИТАННЯ */}
         <button className="btn-dashed-add-question" onClick={handleAddQuestion}>
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
             <line x1="12" y1="5" x2="12" y2="19"></line>
@@ -401,10 +443,9 @@ const TestCreator = ({ user }) => {
           <span>Додати питання вручну</span>
         </button>
 
-        {/* Нижня загальна панель дій */}
+        {/* Нижня загальна панель дій (кнопку "Опублікувати тест" видалено звідси) */}
         <footer className="creator-bottom-actions">
           <button className="btn-cancel" onClick={() => navigate(-1)}>Відмінити зміни</button>
-          <button className="btn-publish" onClick={handlePublish}>Опублікувати тест</button>
         </footer>
 
       </div>
