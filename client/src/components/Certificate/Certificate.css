@@ -1,0 +1,248 @@
+/* Контейнер сертифіката з точними розмірами для альбомного формату А4 */
+.certificate-wrapper {
+  position: relative;
+  width: 1122px;
+  height: 793px;
+  background-color: #ffffff;
+  padding: 24px;
+  box-sizing: border-box;
+  overflow: hidden;
+  font-family: 'Inter', sans-serif;
+}
+
+/* Клас для рендеру компонента поза зоною видимості користувача */
+.certificate-wrapper.hidden {
+  position: absolute;
+  left: -9999px;
+  top: -9999px;
+  z-index: -1000;
+}
+
+/* Внутрішній подвійний бордюр */
+.certificate-inner-border {
+  border: 10px solid #0f172a; /* Темно-синій зовнішній контур */
+  height: 100%;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 32px 48px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #ffffff;
+}
+
+/* Додаткова внутрішня тонка акцентна рамка */
+.certificate-inner-border::after {
+  content: '';
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  right: 8px;
+  bottom: 8px;
+  border: 2px solid #5a5ce5; /* Внутрішній блакитний контур */
+  pointer-events: none;
+}
+
+/* Шапка сертифіката */
+.certificate-header {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.certificate-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.logo-brand-text {
+  font-size: 13px;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: 0.5px;
+}
+
+/* Заголовки */
+.certificate-title-section {
+  text-align: center;
+}
+
+.certificate-main-title {
+  font-size: 26px;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: 2px;
+  margin: 0 0 10px 0;
+}
+
+.title-accent-line {
+  width: 80px;
+  height: 4px;
+  background-color: #5a5ce5;
+  margin: 0 auto 16px auto;
+  border-radius: 2px;
+}
+
+.certificate-subtitle {
+  font-size: 14px;
+  color: #64748b;
+  margin: 0;
+}
+
+/* Блок отримувача (Ім'я студента) */
+.certificate-recipient {
+  text-align: center;
+  width: 100%;
+}
+
+.recipient-name {
+  font-size: 38px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0;
+  border-bottom: 1px dashed #cbd5e1;
+  display: inline-block;
+  padding: 0 40px 8px 40px;
+}
+
+/* Курс навчання */
+.certificate-course-section {
+  text-align: center;
+  width: 100%;
+}
+
+.course-prefix {
+  font-size: 14px;
+  color: #64748b;
+  margin: 0 0 10px 0;
+}
+
+.course-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #5a5ce5;
+  margin: 0;
+}
+
+/* Секція результатів (Три колонки) */
+.certificate-stats-row {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 800px;
+  border-top: 1px solid #f1f5f9;
+  border-bottom: 1px solid #f1f5f9;
+  padding: 16px 0;
+}
+
+.stats-col {
+  flex: 1;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stats-col:not(:last-child) {
+  border-right: 1px solid #cbd5e1;
+}
+
+.stats-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stats-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+/* Підписи та печатка */
+.certificate-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  width: 100%;
+  padding-bottom: 10px;
+}
+
+.signature-block {
+  width: 240px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.signature-font {
+  font-family: 'Georgia', serif;
+  font-style: italic;
+  font-size: 20px;
+  color: #a5b4fc;
+  margin-bottom: 4px;
+  height: 28px;
+  line-height: 28px;
+}
+
+.signature-line {
+  width: 100%;
+  height: 1px;
+  background-color: #475569;
+  margin-bottom: 8px;
+}
+
+.signature-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 2px;
+}
+
+.signature-title {
+  font-size: 10px;
+  color: #64748b;
+}
+
+/* Офіційна печатка */
+.seal-block {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100px;
+}
+
+.seal-dotted-circle {
+  width: 84px;
+  height: 84px;
+  border: 2px dashed #5a5ce5;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #ffffff;
+}
+
+.seal-inner {
+  width: 68px;
+  height: 68px;
+  background-color: #f5f3ff;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.seal-text {
+  font-size: 7px;
+  font-weight: 800;
+  color: #5a5ce5;
+  letter-spacing: 0.5px;
+}

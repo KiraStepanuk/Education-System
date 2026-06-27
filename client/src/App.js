@@ -42,6 +42,7 @@ function AppContent({ user, setUser }) {
                           <Route path="/dashboard" element={<Dashboard user={user} setUser={setUser} />} />
                           <Route path="/courses/:id" element={<CoursePreview user={user} />} />
                           <Route path="/create-course" element={<CourseEditor user={user} />} />
+                          
                           <Route path="/edit-course/:id" element={<CourseEditor user={user} />} />
                           <Route path="/publications" element={user ? <MyPublications user={user} /> : <Navigate to="/" />} />
                           <Route path="/profile/:id" element={<UserProfile />} />
