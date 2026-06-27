@@ -5,12 +5,20 @@ import CourseCard from '../components/Course/CourseCard/CourseCard';
 import { API_URL } from '../config';
 import './MyLibrary.css';
 
+// Імпорт утиліти та компонента сертифіката
+import { generateCertificatePDF } from '../utils/pdfGenerator'; // Підправте шлях
+import Certificate from '../components/Certificate/Certificate'; // Підправте шлях
+
 const MyLibrary = ({ user }) => {
   const [courses, setCourses] = useState([]);
   const [favorites, setFavorites] = useState([]);
   const [recentlyViewed, setRecentlyViewed] = useState([]);
   const [passedQuizzes, setPassedQuizzes] = useState([]); 
-  const [downloadingId, setDownloadingId] = useState(null); // Стан завантаження для кожного окремого сертифіката
+  const [downloadingId, setDownloadingId] = useState(null); 
+  
+  // Стейт для даних поточного активного сертифіката
+  const [activeCertificateData, setActiveCertificateData] = useState(null);
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -27,13 +35,11 @@ const MyLibrary = ({ user }) => {
     if (!user?._id && !user?.id) return;
     const userId = user._id || user.id;
 
-    // Отримання улюблених
     fetch(`${API_URL}/users/${userId}/favorites`)
       .then((res) => res.json())
       .then((data) => setFavorites(Array.isArray(data) ? data : []))
       .catch(err => console.error("Помилка завантаження обраного", err));
 
-    // Отримання пройдених тестів
     fetch(`${API_URL}/api/users/${userId}/quiz-results`)
       .then((res) => res.json())
       .then((data) => setPassedQuizzes(Array.isArray(data) ? data : []))
@@ -50,15 +56,33 @@ const MyLibrary = ({ user }) => {
     }
   }, []);
 
-  // Обробник повторного завантаження сертифіката
-  const handleDownloadCertificate = (e, resultId, courseTitle) => {
-    e.stopPropagation(); // Зупиняє подію кліку, щоб не відбувався перехід на сторінку курсу
+  // ОНОВЛЕНИЙ ОБРОБНИК: завантаження сертифіката
+  const handleDownloadCertificate = (e, resultId, courseTitle, percent, dateStr) => {
+    e.stopPropagation(); // Зупиняє подію кліку на картку
     setDownloadingId(resultId);
     
-    setTimeout(() => {
-      setDownloadingId(null);
-      alert(`Ваш сертифікат за курс «${courseTitle}» успішно згенеровано та завантажено!`);
-    }, 1500);
+    // Оновлюємо стейт даними обраного тесту
+    setActiveCertificateData({
+      studentName: `${user.firstName} ${user.lastName}`.trim(),
+      courseTitle: courseTitle,
+      score: `${percent}%`,
+      date: dateStr,
+      certificateId: resultId
+    });
+
+    // Використовуємо короткий таймаут, щоб React встиг оновити DOM компонента Certificate
+    setTimeout(async () => {
+      try {
+        await generateCertificatePDF('certificate-template', `Сертифікат_${courseTitle}.pdf`);
+      } catch (error) {
+        console.error("Помилка генерації:", error);
+        alert("Помилка при створенні PDF.");
+      } finally {
+        setDownloadingId(null);
+        // Не очищуємо setActiveCertificateData одразу, щоб уникнути миготіння,
+        // це безпечно, оскільки компонент прихований
+      }
+    }, 150); 
   };
 
   const getCategoryDistribution = () => {
@@ -77,12 +101,6 @@ const MyLibrary = ({ user }) => {
       }))
       .sort((a, b) => b.percentage - a.percentage)
       .slice(0, 3);
-  };
-
-  const getRegistrationDate = () => {
-    if (!user?.createdAt) return 'Нещодавно';
-    const date = new Date(user.createdAt);
-    return date.toLocaleDateString('uk-UA', { year: 'numeric', month: 'long' });
   };
 
   const displayRecentOrRecommended = recentlyViewed.length > 0 
@@ -169,10 +187,16 @@ const MyLibrary = ({ user }) => {
                     </span>
                   </div>
 
-                  {/* Кнопка повторного завантаження */}
+                  {/* Кнопка завантаження */}
                   <button
                     className={`download-cert-btn ${isDownloading ? 'loading' : ''}`}
-                    onClick={(e) => handleDownloadCertificate(e, result._id, course.title)}
+                    onClick={(e) => handleDownloadCertificate(
+                      e, 
+                      result._id, 
+                      course.title, 
+                      result.percent, 
+                      new Date(result.createdAt).toLocaleDateString('uk-UA')
+                    )}
                     disabled={downloadingId !== null}
                   >
                     {isDownloading ? (
@@ -240,6 +264,19 @@ const MyLibrary = ({ user }) => {
           ))
         )}
       </div>
+
+      {/* ПРИХОВАНИЙ КОМПОНЕНТ СЕРТИФІКАТА ДЛЯ ГЕНЕРАЦІЇ */}
+      {activeCertificateData && (
+        <Certificate
+          studentName={activeCertificateData.studentName}
+          courseTitle={activeCertificateData.courseTitle}
+          score={activeCertificateData.score}
+          date={activeCertificateData.date}
+          certificateId={activeCertificateData.certificateId}
+          isHidden={true}
+        />
+      )}
+
     </div>
   );
 };

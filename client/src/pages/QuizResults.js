@@ -4,8 +4,12 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { API_URL } from '../config';
 import './QuizResults.css';
 
-// Імпорт зображення кубка з папки assets за вказаним шляхом
+// Імпорт зображення кубка
 import celebratoryVisual from './assets/Celebratory Visual.png';
+
+// Імпорт утиліти та компонента сертифіката
+import { generateCertificatePDF } from '../utils/pdfGenerator'; // Підправте шлях за потреби
+import Certificate from '../components/Certificate/Certificate'; // Підправте шлях за потреби
 
 const QuizResults = () => {
   const location = useLocation();
@@ -13,6 +17,10 @@ const QuizResults = () => {
   const { courseId } = useParams();
   const [courseTitle, setCourseTitle] = useState("Завантаження...");
   const [isDownloading, setIsDownloading] = useState(false);
+
+  // Отримуємо дані користувача з localStorage
+  const user = JSON.parse(localStorage.getItem('user')) || { firstName: 'Студент', lastName: '' };
+  const studentFullName = `${user.firstName} ${user.lastName}`.trim();
 
   // Отримуємо дані з роутера
   const resultData = location.state?.result;
@@ -49,12 +57,18 @@ const QuizResults = () => {
     return `${m} хв ${s} сек`;
   };
 
-  const handleGetCertificate = () => {
+  // ОНОВЛЕНА ФУНКЦІЯ: Реальне генерування PDF
+  const handleGetCertificate = async () => {
     setIsDownloading(true);
-    setTimeout(() => {
+    try {
+      // Викликаємо функцію генерації. ID збігається з id компонента Certificate
+      await generateCertificatePDF('certificate-template', `Сертифікат_${courseTitle}.pdf`);
+    } catch (error) {
+      console.error("Помилка при створенні сертифіката:", error);
+      alert("Не вдалося згенерувати сертифікат. Спробуйте ще раз.");
+    } finally {
       setIsDownloading(false);
-      alert('Ваш сертифікат успішно згенеровано та завантажено!');
-    }, 2000);
+    }
   };
 
   const handleRetake = () => {
@@ -135,7 +149,7 @@ const QuizResults = () => {
             {isDownloading ? (
               <>
                 <div className="loading-spinner"></div>
-                Завантаження...
+                Генерація PDF...
               </>
             ) : (
               <>
@@ -168,6 +182,18 @@ const QuizResults = () => {
         </div>
 
       </div>
+
+      {/* ПРИХОВАНИЙ КОМПОНЕНТ СЕРТИФІКАТА */}
+      {isPassed && (
+        <Certificate
+          studentName={studentFullName}
+          courseTitle={courseTitle}
+          score={`${percent}%`}
+          date={new Date().toLocaleDateString('uk-UA')}
+          certificateId={resultData._id || `CERT-${Date.now()}`}
+          isHidden={true}
+        />
+      )}
     </div>
   );
 };
