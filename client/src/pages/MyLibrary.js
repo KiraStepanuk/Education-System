@@ -47,6 +47,10 @@ const MyLibrary = ({ user }) => {
 
   }, [user]);
 
+
+
+
+  
   useEffect(() => {
     try {
       const stored = JSON.parse(localStorage.getItem('recentlyViewed') || '[]');
@@ -101,6 +105,17 @@ const MyLibrary = ({ user }) => {
       }))
       .sort((a, b) => b.percentage - a.percentage)
       .slice(0, 3);
+  };
+
+
+  // ДОДАНО: Функція для динамічного видалення улюбленого курсу
+  const handleFavoriteUpdate = (courseId, isNowFavorite) => {
+    if (!isNowFavorite) {
+      // Видаляємо курс із стейту, якщо сердечко прибрано
+      setFavorites(prevFavorites => 
+        prevFavorites.filter(course => (course._id || course.id) !== courseId)
+      );
+    }
   };
 
   const displayRecentOrRecommended = recentlyViewed.length > 0 
@@ -252,7 +267,7 @@ const MyLibrary = ({ user }) => {
         )}
       </div>
 
-      <div className="section-header">
+<div className="section-header">
         <h2>Улюблені курси</h2>
       </div>
       <div className="courses-grid">
@@ -260,7 +275,11 @@ const MyLibrary = ({ user }) => {
           <p style={{ color: 'var(--text-muted)' }}>Ви ще не додали жодного курсу до улюблених.</p>
         ) : (
           favorites.map(course => (
-            <CourseCard key={course._id || course.id} course={course} />
+            <CourseCard 
+               key={course._id || course.id} 
+               course={course} 
+               onFavoriteToggle={handleFavoriteUpdate} /* ДОДАНО */
+            />
           ))
         )}
       </div>
