@@ -4,7 +4,8 @@ import Button from '../../UI/Button/Button';
 import { API_URL } from '../../../config';
 import './CourseCard.css';
 
-const CourseCard = ({ course, variant, onApprove, onReject }) => {
+// ДОДАНО: проп onFavoriteToggle
+const CourseCard = ({ course, variant, onApprove, onReject, onFavoriteToggle }) => {
     const navigate = useNavigate();
     
     const courseId = course?.id || course?._id;
@@ -37,7 +38,7 @@ const CourseCard = ({ course, variant, onApprove, onReject }) => {
     const [loadingFav, setLoadingFav] = useState(false);
 
     const handleFavoriteToggle = async (e) => {
-        e.stopPropagation();
+        e.stopPropagation(); // Зупиняємо подію, щоб не відбувся перехід на курс
         if (!userId || loadingFav) return;
         setLoadingFav(true);
         try {
@@ -50,7 +51,14 @@ const CourseCard = ({ course, variant, onApprove, onReject }) => {
             if (data.success) {
                 const newFavs = data.favorites.map(id => id.toString());
                 localStorage.setItem('favorites', JSON.stringify(newFavs));
-                setIsFavorite(newFavs.includes(courseId));
+                
+                const currentStatus = newFavs.includes(courseId);
+                setIsFavorite(currentStatus);
+                
+                // ДОДАНО: Повідомляємо батьківський компонент, якщо передана функція
+                if (onFavoriteToggle) {
+                    onFavoriteToggle(courseId, currentStatus);
+                }
             }
         } catch (err) {
             console.error(err);

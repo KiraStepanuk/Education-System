@@ -1,15 +1,25 @@
+// --- START OF FILE MyLibrary.js ---
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import CourseCard from '../components/Course/CourseCard/CourseCard';
 import { API_URL } from '../config';
 import './MyLibrary.css';
 
+// Імпорт утиліти та компонента сертифіката
+import { generateCertificatePDF } from '../utils/pdfGenerator'; // Підправте шлях
+import Certificate from '../components/Certificate/Certificate'; // Підправте шлях
+
 const MyLibrary = ({ user }) => {
   const [courses, setCourses] = useState([]);
   const [favorites, setFavorites] = useState([]);
   const [recentlyViewed, setRecentlyViewed] = useState([]);
-  const navigate = useNavigate();
+  const [passedQuizzes, setPassedQuizzes] = useState([]); 
+  const [downloadingId, setDownloadingId] = useState(null); 
+  
+  // Стейт для даних поточного активного сертифіката
+  const [activeCertificateData, setActiveCertificateData] = useState(null);
 
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetch(`${API_URL}/courses`)
@@ -21,16 +31,26 @@ const MyLibrary = ({ user }) => {
       .catch(err => console.error("Помилка завантаження курсів", err));
   }, []);
 
-
   useEffect(() => {
     if (!user?._id && !user?.id) return;
     const userId = user._id || user.id;
+
     fetch(`${API_URL}/users/${userId}/favorites`)
       .then((res) => res.json())
       .then((data) => setFavorites(Array.isArray(data) ? data : []))
       .catch(err => console.error("Помилка завантаження обраного", err));
+
+    fetch(`${API_URL}/api/users/${userId}/quiz-results`)
+      .then((res) => res.json())
+      .then((data) => setPassedQuizzes(Array.isArray(data) ? data : []))
+      .catch(err => console.error("Помилка завантаження тестів", err));
+
   }, [user]);
 
+
+
+
+  
   useEffect(() => {
     try {
       const stored = JSON.parse(localStorage.getItem('recentlyViewed') || '[]');
@@ -40,10 +60,37 @@ const MyLibrary = ({ user }) => {
     }
   }, []);
 
+  // ОНОВЛЕНИЙ ОБРОБНИК: завантаження сертифіката
+  const handleDownloadCertificate = (e, resultId, courseTitle, percent, dateStr) => {
+    e.stopPropagation(); // Зупиняє подію кліку на картку
+    setDownloadingId(resultId);
+    
+    // Оновлюємо стейт даними обраного тесту
+    setActiveCertificateData({
+      studentName: `${user.firstName} ${user.lastName}`.trim(),
+      courseTitle: courseTitle,
+      score: `${percent}%`,
+      date: dateStr,
+      certificateId: resultId
+    });
+
+    // Використовуємо короткий таймаут, щоб React встиг оновити DOM компонента Certificate
+    setTimeout(async () => {
+      try {
+        await generateCertificatePDF('certificate-template', `Сертифікат_${courseTitle}.pdf`);
+      } catch (error) {
+        console.error("Помилка генерації:", error);
+        alert("Помилка при створенні PDF.");
+      } finally {
+        setDownloadingId(null);
+        // Не очищуємо setActiveCertificateData одразу, щоб уникнути миготіння,
+        // це безпечно, оскільки компонент прихований
+      }
+    }, 150); 
+  };
 
   const getCategoryDistribution = () => {
     if (!favorites || favorites.length === 0) return [];
-
     const counts = {};
     favorites.forEach((course) => {
       const cat = course.category || "Інше";
@@ -61,12 +108,15 @@ const MyLibrary = ({ user }) => {
   };
 
 
-  const getRegistrationDate = () => {
-    if (!user?.createdAt) return 'Нещодавно';
-    const date = new Date(user.createdAt);
-    return date.toLocaleDateString('uk-UA', { year: 'numeric', month: 'long' });
+  // ДОДАНО: Функція для динамічного видалення улюбленого курсу
+  const handleFavoriteUpdate = (courseId, isNowFavorite) => {
+    if (!isNowFavorite) {
+      // Видаляємо курс із стейту, якщо сердечко прибрано
+      setFavorites(prevFavorites => 
+        prevFavorites.filter(course => (course._id || course.id) !== courseId)
+      );
+    }
   };
-
 
   const displayRecentOrRecommended = recentlyViewed.length > 0 
     ? recentlyViewed.slice(0, 3) 
@@ -94,10 +144,7 @@ const MyLibrary = ({ user }) => {
                       <span className="category-percentage">{item.percentage}%</span>
                     </div>
                     <div className="category-progress-bar">
-                      <div 
-                        className="category-progress-fill" 
-                        style={{ width: `${item.percentage}%` }}
-                      ></div>
+                      <div className="category-progress-fill" style={{ width: `${item.percentage}%` }}></div>
                     </div>
                   </div>
                 ))}
@@ -117,13 +164,76 @@ const MyLibrary = ({ user }) => {
         </div>
 
         <div className="ls-card ls-card-white">
-          <h4>📅 Член спільноти з</h4>
-          <h2 style={{ fontSize: '24px', margin: '12px 0' }}>{getRegistrationDate()}</h2>
-          <p style={{ textTransform: 'capitalize' }}>
-            Роль у системі: {user?.role === 'admin' ? 'Модератор' : 'Користувач'}
-          </p>
+          <h4>🏆 Пройдено тестів</h4>
+          <h2 style={{ fontSize: '36px', margin: '8px 0' }}>{passedQuizzes.length}</h2>
+          <p>Успішно складені фінальні тестування.</p>
         </div>
       </div>
+
+      {/* СЕКЦІЯ: МОЇ ДОСЯГНЕННЯ */}
+      {passedQuizzes.length > 0 && (
+        <>
+          <div className="section-header">
+            <h2>Мої досягнення (Пройдені тести)</h2>
+          </div>
+          <div className="recent-courses">
+            {passedQuizzes.map((result) => {
+              const course = result.course_id;
+              if (!course) return null;
+              const isDownloading = downloadingId === result._id;
+
+              return (
+                <div 
+                  className="recent-card passed-quiz-card" 
+                  key={result._id} 
+                  onClick={() => navigate(`/courses/${course._id}`)}
+                  style={{ cursor: 'pointer', borderLeft: '4px solid #10b981' }}
+                >
+                  <img 
+                    src={course.image || "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=500&q=80"} 
+                    alt={course.title} 
+                    className="recent-img"
+                  />
+                  <div className="recent-info" style={{ flex: 1 }}>
+                    <h4>{course.title}</h4>
+                    <p style={{ color: '#10b981', fontWeight: '600' }}>✓ Тест складено ({result.percent}%)</p>
+                    <span style={{ fontSize: '11px', color: '#64748b' }}>
+                      Дата: {new Date(result.createdAt).toLocaleDateString('uk-UA')}
+                    </span>
+                  </div>
+
+                  {/* Кнопка завантаження */}
+                  <button
+                    className={`download-cert-btn ${isDownloading ? 'loading' : ''}`}
+                    onClick={(e) => handleDownloadCertificate(
+                      e, 
+                      result._id, 
+                      course.title, 
+                      result.percent, 
+                      new Date(result.createdAt).toLocaleDateString('uk-UA')
+                    )}
+                    disabled={downloadingId !== null}
+                  >
+                    {isDownloading ? (
+                      <div className="spinner-sm"></div>
+                    ) : (
+                      <>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                          <polyline points="7 10 12 15 17 10"></polyline>
+                          <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                        <span>Сертифікат</span>
+                      </>
+                    )}
+                  </button>
+
+                </div>
+              );
+            })}
+          </div>
+        </>
+      )}
 
       <div className="section-header">
         <h2>{recentlyViewed.length > 0 ? "Нещодавно переглянуті" : "Рекомендовані для вас"}</h2>
@@ -157,7 +267,7 @@ const MyLibrary = ({ user }) => {
         )}
       </div>
 
-      <div className="section-header">
+<div className="section-header">
         <h2>Улюблені курси</h2>
       </div>
       <div className="courses-grid">
@@ -165,12 +275,30 @@ const MyLibrary = ({ user }) => {
           <p style={{ color: 'var(--text-muted)' }}>Ви ще не додали жодного курсу до улюблених.</p>
         ) : (
           favorites.map(course => (
-            <CourseCard key={course._id || course.id} course={course} />
+            <CourseCard 
+               key={course._id || course.id} 
+               course={course} 
+               onFavoriteToggle={handleFavoriteUpdate} /* ДОДАНО */
+            />
           ))
         )}
       </div>
+
+      {/* ПРИХОВАНИЙ КОМПОНЕНТ СЕРТИФІКАТА ДЛЯ ГЕНЕРАЦІЇ */}
+      {activeCertificateData && (
+        <Certificate
+          studentName={activeCertificateData.studentName}
+          courseTitle={activeCertificateData.courseTitle}
+          score={activeCertificateData.score}
+          date={activeCertificateData.date}
+          certificateId={activeCertificateData.certificateId}
+          isHidden={true}
+        />
+      )}
+
     </div>
   );
 };
 
 export default MyLibrary;
+// --- END OF FILE MyLibrary.js ---
