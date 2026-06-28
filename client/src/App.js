@@ -8,12 +8,14 @@ import CoursePreview from "./pages/CoursePreview";
 import CourseEditor from './pages/CourseEditor';
 import AllCourses from './pages/AllCourses';
 import MyLibrary from './pages/MyLibrary';
+import QuizAttempt from './pages/QuizAttempt';
+import TestCreator from './pages/TestCreator';
 import Sidebar from './components/Layout/Sidebar/Sidebar';
 import TopNav from './components/Layout/TopNav/TopNav';
 import MyPublications from './pages/MyPublications';
 import UserProfile from './pages/UserProfile';
 import './App.css';
-
+import QuizResults from './pages/QuizResults';
 
 function AppContent({ user, setUser }) {
   const location = useLocation();
@@ -40,9 +42,13 @@ function AppContent({ user, setUser }) {
                           <Route path="/dashboard" element={<Dashboard user={user} setUser={setUser} />} />
                           <Route path="/courses/:id" element={<CoursePreview user={user} />} />
                           <Route path="/create-course" element={<CourseEditor user={user} />} />
+                          
                           <Route path="/edit-course/:id" element={<CourseEditor user={user} />} />
                           <Route path="/publications" element={user ? <MyPublications user={user} /> : <Navigate to="/" />} />
                           <Route path="/profile/:id" element={<UserProfile />} />
+                          <Route path="/create-test/:courseId" element={<TestCreator user={user} />} />
+                          <Route path="/take-test/:courseId" element={<QuizAttempt user={user} />} />
+                            <Route path="/quiz-results/:courseId" element={<QuizResults />} />
                       </Routes>
                 </div>
             </main>

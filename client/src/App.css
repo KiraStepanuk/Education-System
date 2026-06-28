@@ -31,8 +31,6 @@ body {
   display: flex;
   flex-direction: column;
   min-width: 0;
-  width: 100%;
-
 }
 
 * {
@@ -41,5 +39,5 @@ body {
 
 .main-content.with-sidebar {
   /* ВАЖНО: Замените 260px на точную ширину вашего сайдбара из Sidebar.css */
-  margin-left: 260px;
+  margin-left: 320px;
 }

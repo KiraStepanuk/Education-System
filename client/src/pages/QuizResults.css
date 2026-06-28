@@ -1,0 +1,368 @@
+/* --- START OF FILE QuizResults.css --- */
+
+.results-page-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: radial-gradient(circle at 10% 50%, #f1f5f9 0%, #ffffff 40%, #eef2ff 100%);
+  padding: 40px 20px;
+  font-family: 'Inter', sans-serif;
+  box-sizing: border-box;
+}
+
+/* Анімація появи головної картки */
+.results-card {
+  background: #ffffff;
+  border: 1px solid #f1f5f9;
+  border-radius: 24px;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.03);
+  width: 100%;
+  max-width: 600px;
+  padding: 60px 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  box-sizing: border-box;
+  animation: cardEntrance 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Контейнер для зображення кубка */
+.results-visual-container {
+  width: 140px;
+  height: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 32px;
+}
+
+/* Анімація появи кубка */
+.results-trophy-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  animation: trophyPop 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.failed-circle {
+  width: 90px;
+  height: 90px;
+  background-color: #fef2f2;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ef4444;
+  box-shadow: 0 8px 20px rgba(239, 68, 68, 0.08);
+  animation: trophyPop 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* Заголовки */
+.results-title {
+  font-size: 34px;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.25;
+  margin: 0 0 16px 0;
+  max-width: 450px;
+}
+
+.results-subtitle {
+  font-size: 14px;
+  color: #64748b;
+  line-height: 1.5;
+  margin: 0 0 32px 0;
+}
+
+.results-subtitle strong {
+  color: #0f172a;
+}
+
+/* Картки статистики */
+.results-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  width: 100%;
+  margin-bottom: 24px;
+}
+
+.results-stat-box {
+  background-color: #eef2ff;
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  transition: transform 0.2s;
+}
+
+.results-stat-box:hover {
+  transform: translateY(-2px);
+}
+
+.results-stat-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+
+.results-stat-value {
+  font-size: 24px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+/* Смужка прогресу */
+.results-progress-container {
+  width: 100%;
+  height: 6px;
+  background-color: #cbd5e1;
+  border-radius: 4px;
+  margin-top: 12px;
+  overflow: hidden;
+}
+
+/* Оновлена анімована смужка заповнення */
+.results-progress-bar-animated {
+  height: 100%;
+  background-color: #4f46e5;
+  border-radius: 4px;
+  width: 0;
+  animation: fillProgress 1.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation-delay: 0.5s;
+}
+
+/* Блок відгуку (фідбеку) */
+.results-feedback-box {
+  background-color: #f8fafc;
+  border: 1px solid #f1f5f9;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 32px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.results-feedback-text {
+  font-size: 14px;
+  font-style: italic;
+  color: #475569;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* Кнопки дій */
+.results-btn-primary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background-color: #4f46e5;
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  padding: 16px 24px;
+  font-size: 14px;
+  font-weight: 700;
+  width: 100%;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+}
+
+.results-btn-primary:hover {
+  background-color: #4338ca;
+  box-shadow: 0 6px 16px rgba(79, 70, 229, 0.3);
+}
+
+.results-btn-primary:active {
+  transform: scale(0.98);
+}
+
+.results-btn-primary:disabled {
+  background-color: #94a3b8;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* Нижня панель дій */
+.results-actions-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.results-btn-outline {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background-color: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #0f172a;
+  border-radius: 10px;
+  padding: 14px 20px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s;
+  flex: 1;
+}
+
+.results-btn-outline:hover {
+  background-color: #f8fafc;
+  border-color: #94a3b8;
+}
+
+.results-link-back {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 600;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color 0.2s;
+  padding: 10px;
+}
+
+.results-link-back:hover {
+  color: #0f172a;
+}
+
+.results-link-text {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+/* Стан завантаження */
+.loading-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #ffffff;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ==================== 
+   СТИЛІ ДЛЯ АНІМАЦІЇ КРОКІВ (Staggered Fade In Up)
+   ==================== */
+.animated-fade-in-up {
+  opacity: 0;
+  transform: translateY(15px);
+  animation: fadeInUp 0.5s ease forwards;
+}
+
+.delay-1 { animation-delay: 0.15s; }
+.delay-2 { animation-delay: 0.3s; }
+.delay-3 { animation-delay: 0.45s; }
+.delay-4 { animation-delay: 0.6s; }
+.delay-5 { animation-delay: 0.7s; }
+
+/* ==================== 
+   KEYFRAMES (Ключові кадри)
+   ==================== */
+@keyframes cardEntrance {
+  0% {
+    opacity: 0;
+    transform: translateY(40px) scale(0.97);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes trophyPop {
+  0% {
+    opacity: 0;
+    transform: scale(0.5) rotate(-10deg);
+  }
+  70% {
+    transform: scale(1.08) rotate(3deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+@keyframes fadeInUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fillProgress {
+  to {
+    width: var(--target-width);
+  }
+}
+
+/* ==================== 
+   АДАПТИВНІСТЬ ТА СТИЛІ ПОМИЛКИ
+   ==================== */
+.results-page-wrapper.failed {
+  background: radial-gradient(circle at 10% 50%, #fef2f2 0%, #ffffff 40%, #fff1f2 100%);
+}
+
+.failed-circle {
+  background-color: #fef2f2;
+  color: #ef4444;
+  box-shadow: 0 8px 20px rgba(239, 68, 68, 0.08);
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.failed-box {
+  background-color: #fef2f2;
+}
+
+.failed-bar {
+  background-color: #ef4444;
+}
+
+@media (max-width: 480px) {
+  .results-card {
+    padding: 40px 20px;
+  }
+  .results-title {
+    font-size: 28px;
+  }
+  .results-stats-grid {
+    grid-template-columns: 1fr;
+  }
+  .results-actions-row {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .results-btn-outline {
+    width: 100%;
+  }
+}
+
+/* --- END OF FILE QuizResults.css --- */

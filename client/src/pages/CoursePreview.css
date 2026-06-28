@@ -78,6 +78,7 @@
   display: flex;
   flex-direction: column;
   gap: 30px;
+  min-width: 0;
 }
 
 .about-course-card {
@@ -85,6 +86,7 @@
   border: 1px solid #e2e8f0;
   border-radius: 16px;
   padding: 30px;
+  min-width: 0;
 }
 
 .about-course-card h2 {
@@ -98,6 +100,51 @@
   line-height: 1.7;
   color: #334155;
   margin-bottom: 40px;
+}
+
+.preview-content-body .ql-editor {
+  width: 100%;
+  max-width: 100%;
+  padding: 0 !important;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+.preview-content-body .ql-editor * {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.preview-content-body .ql-editor img,
+.preview-content-body .ql-editor video,
+.preview-content-body .ql-editor iframe,
+.preview-content-body .ql-editor table,
+.preview-content-body .ql-editor pre {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.preview-content-body .ql-editor img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+
+.preview-content-body .ql-editor ol,
+.preview-content-body .ql-editor ul {
+  padding-left: 30px !important;
+}
+
+.preview-content-body .ql-editor ol li {
+  list-style: decimal !important;
+}
+
+.preview-content-body .ql-editor ul li {
+  list-style: disc !important;
+}
+
+.preview-content-body .ql-editor li::before {
+  content: none !important;
 }
 
 .preview-paragraph {
@@ -410,4 +457,25 @@
   .preview-layout {
     grid-template-columns: 1fr;
   }
+}
+
+/* ФІНАЛЬНИЙ ФІКС ПЕРЕНЕСЕННЯ СЛІВ ДЛЯ QUILL */
+.preview-content-body .ql-editor {
+  white-space: pre-wrap !important;
+}
+
+.preview-content-body .ql-editor p {
+  display: block !important;
+  white-space: pre-wrap !important;
+  word-break: normal !important;
+  overflow-wrap: break-word !important;
+}
+
+.preview-content-body .ql-editor span,
+.preview-content-body .ql-editor strong,
+.preview-content-body .ql-editor em {
+  display: inline !important;
+  white-space: pre-wrap !important;
+  word-break: normal !important;
+  overflow-wrap: break-word !important;
 }

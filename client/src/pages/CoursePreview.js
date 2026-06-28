@@ -1,5 +1,7 @@
+/* --- START OF FILE CoursePreview.js --- */
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import 'react-quill-new/dist/quill.snow.css';
 import Footer from '../components/Layout/Footer/Footer';
 import RejectModal from '../components/Unique/RejectModal/RejectModal';
 import { API_URL } from '../config';
@@ -12,6 +14,9 @@ const CoursePreview = ({ user }) => {
   const [course, setCourse] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Стан для перевірки наявності тесту
+  const [quizId, setQuizId] = useState(null);
 
   // Стани для коментарів
   const [comments, setComments] = useState([]);
@@ -36,6 +41,16 @@ const CoursePreview = ({ user }) => {
           console.error('Помилка завантаження курсу:', err);
           setLoading(false);
         });
+
+    // Перевірка наявності тесту для цього курсу
+    fetch(`${API_URL}/api/courses/${id}/quiz`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (!data.error && data._id) {
+          setQuizId(data._id);
+        }
+      })
+      .catch(console.error);
 
     // Завантаження коментарів
     fetch(`${API_URL}/courses/${id}/comments`)
@@ -95,7 +110,7 @@ const CoursePreview = ({ user }) => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'user_id': user?.id
+          'user_id': user?.id || user?._id
         },
         body: JSON.stringify({ text: newComment }),
       });
@@ -126,7 +141,7 @@ const CoursePreview = ({ user }) => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'user_id': user?.id
+          'user_id': user?.id || user?._id
         },
         body: JSON.stringify({ rating: ratingValue }),
       });
@@ -151,7 +166,6 @@ const CoursePreview = ({ user }) => {
     }
   };
   
-  // Функція для кнопки Share
   const handleShare = () => {
     const currentUrl = window.location.href;
     
@@ -188,6 +202,33 @@ const CoursePreview = ({ user }) => {
 
   return (
       <div className="preview-page">
+        {/* Залізобетонний інжект стилів для фіксу перенесення слів безпосередньо у DOM */}
+        <style>{`
+          /* Застосовуємо правила до самого контейнера і до абсолютно кожного елемента всередині */
+          .preview-content-body,
+          .preview-content-body *,
+          .ql-editor,
+          .ql-editor * {
+            white-space: pre-wrap !important;
+            word-break: break-word !important;
+            overflow-wrap: break-word !important;
+          }
+          
+          /* Якщо всередині закралися теги pre або code, які намертво блокують перенесення */
+          .preview-content-body pre,
+          .preview-content-body code {
+            white-space: pre-wrap !important;
+            word-break: break-word !important;
+          }
+
+          /* Повертаємо нормальне відображення для блочних елементів */
+          .preview-content-body p,
+          .preview-content-body div {
+            display: block !important;
+            width: 100% !important;
+          }
+        `}</style>
+
         <main className="preview-container">
 
           <div className="preview-header-row">
@@ -208,15 +249,17 @@ const CoursePreview = ({ user }) => {
             <div className="preview-left-col">
               <div className="about-course-card">
                 <h2>About this course</h2>
-                <div className="preview-content-body">
-                  {course.content ? (
-                      course.content.split('\n').map((paragraph, index) => (
-                          <p key={index} className="preview-paragraph">{paragraph}</p>
-                      ))
-                  ) : (
-                      <p className="no-content-notice">Вміст курсу порожній.</p>
-                  )}
-                </div>
+                 <div className="preview-content-body ql-snow">
+                   {course.content ? (
+                     <div 
+                        className="ql-editor" 
+                        dangerouslySetInnerHTML={{ __html: course.content }} 
+                        style={{ padding: 0 }} 
+                        />
+                    ) : (
+                   <p className="no-content-notice">Вміст курсу порожній.</p>
+                   )}
+                 </div>
 
                 <div className="feedback-section">
                   <p>Your feedback helps the community</p>
@@ -258,7 +301,6 @@ const CoursePreview = ({ user }) => {
                     comments.map((comment) => (
                         <div className="comment-card" key={comment.id || comment._id}>
                           <div className="comment-header">
-                            {/* ДОДАНО ОБРОБНИК КЛІКУ ТА СТИЛІ */}
                             <div 
                                className="comment-user" 
                                onClick={() => comment.author?.id && navigate(`/profile/${comment.author.id}`)}
@@ -324,6 +366,21 @@ const CoursePreview = ({ user }) => {
                 </div>
               </div>
 
+              {/* БЛОК ПРОХОДЖЕННЯ ТЕСТУ (Відображається тільки якщо є тест) */}
+              {quizId && (
+                <div className="actions-card" style={{ background: '#f0fdf4', borderColor: '#bbf7d0' }}>
+                  <h4 style={{ color: '#166534' }}>Перевірка знань:</h4>
+                  <p style={{ fontSize: '13px', color: '#15803d', marginBottom: '16px' }}>До цього курсу додано тест. Пройдіть його, щоб закріпити матеріал.</p>
+                  <button 
+                    className="btn-primary-action" 
+                    style={{ background: '#16a34a' }}
+                    onClick={() => navigate(`/take-test/${course.id || course._id}`)}
+                  >
+                    Пройти тест
+                  </button>
+                </div>
+              )}
+
               {isAdmin && course.status === 'pending' && (
                   <div className="actions-card">
                     <h4>Дії Модератора:</h4>
@@ -344,7 +401,7 @@ const CoursePreview = ({ user }) => {
                   <div className="actions-card">
                     <h4>Дії Автора:</h4>
                     <div className="actions-buttons">
-                      <button className="btn-primary-action" onClick={() => navigate(`/edit-course/${course.id}`)}>
+                      <button className="btn-primary-action" onClick={() => navigate(`/edit-course/${course.id || course._id}`)}>
                         Редагувати
                       </button>
                       <button className="btn-secondary-action" onClick={handleDelete}>
