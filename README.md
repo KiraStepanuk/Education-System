@@ -1,12 +1,12 @@
 # 🎓 Education-System (Learning Hub)
 
-[![Netlify Status](https://api.netlify.com/api/v1/badges/your-badge-id/deploy-status)](https://education-system11.netlify.app/)
+
 [![React](https://img.shields.io/badge/React-20232A?style=flat&logo=react&logoColor=61DAFB)](https://reactjs.org/)
 [![Node.js](https://img.shields.io/badge/Node.js-43853D?style=flat&logo=node.js&logoColor=white)](https://nodejs.org/)
 [![MongoDB](https://img.shields.io/badge/MongoDB-4EA94B?style=flat&logo=mongodb&logoColor=white)](https://www.mongodb.com/)
 [![Gemini AI](https://img.shields.io/badge/AI-Google_Gemini-blue?style=flat)](https://deepmind.google/technologies/gemini/)
 
-**Education-System** — це інтерактивна вебплатформа для дистанційного навчання, обміну знаннями та створення освітніх курсів. Проєкт розроблено в рамках проєктно-технологічної практики командою "The Magnificent Seven-1".
+**Education-System** — це інтерактивна вебплатформа для дистанційного навчання, обміну знаннями та створення освітніх курсів. Проєкт розроблено в рамках проєктно-технологічної практики ОНМУ командою "The Magnificent Seven-1".
 
 🌐 **Live Demo:** [education-system11.netlify.app](https://education-system11.netlify.app/)  
 *(⚠️ **Увага:** Серверна частина розміщена на безкоштовному тарифі Render. При першому відкритті бази даних та серверу може знадобитися 2-3 хвилини для "пробудження").*
@@ -47,11 +47,10 @@
 ## 📸 Скріншоти
 
 
-| :---: | :---: |
-| <img src="Education-System\client\src\pages\assets\1.PNG" width="400"/> | <img src="Education-System\client\src\pages\assets\2.PNG" width="400"/> |
 
-| :---: | :---: |
-| <img src="Education-System\client\src\pages\assets\3.PNG" width="400"/> | <img src="Education-System\client\src\pages\assets\4.PNG" width="400"/> |
+ <img src="./client/src/pages/assets/3.PNG" width="400"/>  <img src="./client/src/pages/assets/2.PNG" width="400"/> 
+
+<img src="./client/src/pages/assets/1.PNG" width="400"/>  <img src="./client/src/pages/assets/4.PNG" width="400"/> 
 
 ---
 
